@@ -12,7 +12,7 @@ async fn main() {
     //let ids: Vec<u64> = (1..=10).into_iter().collect();
     let mut join_set = JoinSet::new();
 
-    for id in (1..10) {
+    for id in 1..10 {
         while join_set.len() >= max_concurrent {
             join_set.join_next().await.unwrap().unwrap();
         }
