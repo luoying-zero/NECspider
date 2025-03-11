@@ -20,10 +20,10 @@ async fn main() {
             let res = reqwest::Client::new()
                 .get(format!("https://music.163.com/playlist?id={}", id))
                 .send()
-                .await?.text().await?
+                .await?.text().await?;
             let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
-            if let Some(name) = scraper::Html::parse_document(res).select(&select).next(){
-                if name.value() == "PurionPurion"{
+            if let Some(name) = scraper::Html::parse_document(&res).select(&select).next(){
+                if name.value().name() == "PurionPurion"{
                     println!("{:?}", id);
                 }
             }
