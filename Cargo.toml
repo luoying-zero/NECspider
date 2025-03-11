@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 spider = "2.33.1"
+tokio = "1.44.0"
