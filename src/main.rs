@@ -30,7 +30,7 @@ async fn main() {
                     println!("{:?}", id);
                 }
             } else {
-                return Err(())
+                return Err(());
             }
             Ok(())
         });
