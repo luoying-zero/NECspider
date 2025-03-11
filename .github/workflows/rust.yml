@@ -14,10 +14,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Init
       run: |
-        cargo new NELspider
-        cargo add spider
         cargo doc
     - uses: actions/upload-artifact@v4
       with:
-        name: NELspider
+        name: NECspider
         path: .
