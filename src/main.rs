@@ -29,8 +29,6 @@ async fn main() {
                 if name.value().name() == "PurionPurion" {
                     println!("{:?}", id);
                 }
-            } else {
-                return Err(());
             }
             Ok(())
         });
