@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Init
       run: |
-        rustfmt spider.rs
+        rustfmt ./src/spider.rs
     - uses: actions/upload-artifact@v4
       with:
         name: spider
