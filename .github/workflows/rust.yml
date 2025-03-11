@@ -14,8 +14,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Init
       run: |
-        cargo doc
+        rustfmt spider.rs
     - uses: actions/upload-artifact@v4
       with:
-        name: NECspider
-        path: .
+        name: spider
+        path: ./src/spider.rs
