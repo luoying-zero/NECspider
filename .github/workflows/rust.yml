@@ -13,8 +13,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Init
-      run: cargo new hello_world
+      run: |
+        cargo new NELspider
+        cargo add spider
     - uses: actions/upload-artifact@v4
       with:
-        name: src
+        name: NELspider
         path: .
