@@ -16,6 +16,7 @@ jobs:
       run: |
         cargo new NELspider
         cargo add spider
+        cargo doc
     - uses: actions/upload-artifact@v4
       with:
         name: NELspider
