@@ -1,6 +1,6 @@
 use spider::tokio;
 use spider::website::Website;
-use tokio::io::AsyncWriteExt;
+// use tokio::io::AsyncWriteExt;
 
 #[tokio::main]
 async fn main() {
@@ -8,7 +8,7 @@ async fn main() {
     let mut rx2 = website.subscribe(16).unwrap();
 
     tokio::spawn(async move {
-        let mut stdout = tokio::io::stdout();
+        let mut stdout = stdout();
 
         while let Ok(res) = rx2.recv().await {
             let _ = stdout
