@@ -1,3 +1,4 @@
+use std::error::Error;
 use reqwest;
 use scraper;
 use tokio;
