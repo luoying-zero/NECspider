@@ -9,10 +9,10 @@ use tokio::task::JoinSet;
 #[tokio::main]
 async fn main() {
     let max_concurrent = 2;
-    let ids: Vec<u64> = (1..=10).into_iter().collect();
+    //let ids: Vec<u64> = (1..=10).into_iter().collect();
     let mut join_set = JoinSet::new();
 
-    for id in ids {
+    for id in (1..10) {
         while join_set.len() >= max_concurrent {
             join_set.join_next().await.unwrap().unwrap();
         }
