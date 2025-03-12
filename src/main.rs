@@ -61,7 +61,9 @@ where
 
     for _ in 0..10 {
         match f().await {
-            Ok(val) => break;
+            Ok(val) => {
+                break;
+            },
             Err(_) => {
                 //let elapsed = now.elapsed();
                 //if elapsed > warn {
