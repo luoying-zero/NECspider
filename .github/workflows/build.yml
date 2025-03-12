@@ -1,4 +1,4 @@
-name: Run
+name: Build
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: Swatinem/rust-cache@v2
-    - name: Run
+    - name: check
       run: cargo check
     - uses: actions/upload-artifact@v4
       with:
