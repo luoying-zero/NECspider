@@ -10,7 +10,7 @@ use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
-    let arguments = args();
+    let mut arguments = args();
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
