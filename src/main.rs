@@ -58,6 +58,7 @@ where
     F: Fn() -> Fut,
     Fut: Future<Output = Result<T, E>>,
 {
+    let maxtry = 5;
     //let now = Instant::now();
     let backoff = Duration::from_millis(500);
     //let factor = 1.5;
@@ -66,18 +67,21 @@ where
     //let mut rng = rand::rngs::OsRng;
     //let mut jitter = || rng.gen_range(Duration::ZERO..backoff);
 
-    for _ in 0..=5 {
+    for i in 0..=maxtry {
         match f().await {
             Ok(_) => {
                 break;
             }
-            Err(_) => {
+            Err(e) => {
                 //let elapsed = now.elapsed();
                 //if elapsed > warn {
                 //let elapsed = humantime::format_duration(elapsed);
                 //error!(%elapsed);
                 //}
                 //let retry_in = backoff.mul_f32(factor).min(limit) + jitter();
+                if i == maxtry{
+                    println!("{:?}", e);
+                }
                 tokio::time::sleep(backoff).await;
             }
         }
