@@ -22,7 +22,7 @@ async fn main() {
             join_set.join_next().await.unwrap().unwrap();
         }
         join_set.spawn(retry_on_err(
-            move || findAuthor(id)
+            move || find_Author(id)
         ));
     }
 
@@ -35,7 +35,7 @@ async fn main() {
     println!("ALL DONE");
 }
 
-async fn findAuthor(id: u64) -> Result<(), reqwest::Error> {
+async fn find_Author(id: u64) -> Result<(), reqwest::Error> {
     let res = reqwest::Client::new()
         .get(format!("https://music.163.com/playlist?id={}", id))
         .send()
