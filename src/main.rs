@@ -26,7 +26,8 @@ async fn main() {
                 .await
                 .unwrap();
             let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
-            let name = scraper::Html::parse_document(&res).select(&select).next().unwrap();
+            let html = scraper::Html::parse_document(&res);
+            let name = html.select(&select).next().unwrap();
             if name.value().name() == "PurionPurion" {
                 println!("{:?}", id);
             }
