@@ -2,6 +2,7 @@ use reqwest;
 use scraper;
 use std::future::Future;
 use std::time::Duration;
+use std::env::args
 use tokio;
 //use tokio::time::{sleep, Duration};
 use tokio::task::JoinSet;
@@ -9,11 +10,14 @@ use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
-    let max_concurrent = 2;
+    let arguments = args();
+    let max_concurrent = arguments.next().unwrap().next().unwrap();
+    let begin = arguments.next().unwrap();
+    let end = arguments.next().unwrap();
     //let ids: Vec<u64> = (1..=10).into_iter().collect();
     let mut join_set = JoinSet::new();
 
-    for id in 1..10 {
+    for id in begin..end {
         while join_set.len() >= max_concurrent {
             join_set.join_next().await.unwrap().unwrap();
         }
