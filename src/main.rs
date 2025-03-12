@@ -46,7 +46,7 @@ async fn main() {
 }
 
 
-async fn retry_on_err<T, E, F, Fut>(f: F) -> T
+async fn retry_on_err<T, E, F, Fut>(f: F)
 where
     F: Fn() -> Fut,
     Fut: Future<Output = Result<T, E>>,
@@ -61,7 +61,7 @@ where
 
     for _ in 0..10 {
         match f().await {
-            Ok(val) => return val,
+            Ok(val) => break;
             Err(_) => {
                 //let elapsed = now.elapsed();
                 //if elapsed > warn {
