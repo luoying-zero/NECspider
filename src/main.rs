@@ -45,6 +45,24 @@ async fn main() {
     println!("ALL DONE");
 }
 
+async fn findAuthor(id:i32) -> Result<(), reqwest::Error> {
+            let res = reqwest::Client::new()
+                .get(format!("https://music.163.com/playlist?id={}", id))
+                .send()
+                .await?
+                .text()
+                .await
+                .unwrap();
+            let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
+            let html = scraper::Html::parse_document(&res);
+            let name = html.select(&select).next().unwrap();
+            if name.value().name() == "PurionPurion" {
+                println!("{:?}", id);
+            }
+            
+            Ok(())
+}
+
 
 async fn retry_on_err<T, E, F, Fut>(f: F)
 where
