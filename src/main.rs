@@ -2,7 +2,7 @@ use reqwest;
 use scraper;
 use std::future::Future;
 use std::time::Duration;
-use std::env::args
+use std::env::args;
 use tokio;
 //use tokio::time::{sleep, Duration};
 use tokio::task::JoinSet;
@@ -11,9 +11,9 @@ use tokio::task::JoinSet;
 #[tokio::main]
 async fn main() {
     let arguments = args();
-    let max_concurrent = arguments.next().unwrap().next().unwrap();
-    let begin = arguments.next().unwrap();
-    let end = arguments.next().unwrap();
+    let max_concurrent = arguments.nth(1).unwrap().parse::<i32>().unwrap();
+    let begin = arguments.next().unwrap().parse::<i32>().unwrap();
+    let end = arguments.next().unwrap().parse::<i32>().unwrap();
     //let ids: Vec<u64> = (1..=10).into_iter().collect();
     let mut join_set = JoinSet::new();
 
@@ -55,6 +55,7 @@ async fn findAuthor(id: i32) -> Result<(), reqwest::Error> {
 
 async fn retry_on_err<T, E, F, Fut>(f: F)
 where
+    E: std::fmt::Debug
     F: Fn() -> Fut,
     Fut: Future<Output = Result<T, E>>,
 {
