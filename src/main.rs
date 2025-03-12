@@ -1,11 +1,11 @@
-//use std::error::Error;
+use std::time::{Instant, Duration};
 use reqwest;
 use scraper;
 use tokio;
-
+use futures_core::future::Future;
 //use tokio::time::{sleep, Duration};
-//use rand::{thread_rng, Rng};
 use tokio::task::JoinSet;
+use rand;
 
 #[tokio::main]
 async fn main() {
@@ -45,6 +45,35 @@ async fn main() {
     println!("ALL DONE");
 }
 
+
+async fn retry_on_err<T, E, F, Fut>(f: F) -> T
+where
+    F: Fn() -> Fut,
+    Fut: Future<Output = Result<T, E>>,
+{
+    let now = Instant::now();
+    let backoff = Duration::from_millis(500);
+    let factor = 1.5;
+    let limit = Duration::from_secs(60 * 2);
+    let warn = Duration::from_secs(60 * 60);
+    let mut rng = rand::rngs::OsRng;
+    let mut jitter = || rng.gen_range(Duration::ZERO..backoff);
+
+    loop {
+        match f().await {
+            Ok(val) => return val,
+            Err(_) => {
+                //let elapsed = now.elapsed();
+                //if elapsed > warn {
+                    //let elapsed = humantime::format_duration(elapsed);
+                    //error!(%elapsed);
+                //}
+                let retry_in = backoff.mul_f32(factor).min(limit) + jitter();
+                tokio::time::sleep(retry_in).await;
+            }
+        }
+    }
+}
 // async fn my_bg_task(id: u64) {
 // let num: u64 = thread_rng().gen_range(10..200);
 // println!("START id: {} with {}ms", id, num);
