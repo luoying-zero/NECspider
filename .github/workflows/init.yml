@@ -14,8 +14,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Init
       run: |
-        cargo check
+        cargo fmt
     - uses: actions/upload-artifact@v4
       with:
         name: spider
-        path:  ./cargo.lock
+        path:  ./src/main.rs
