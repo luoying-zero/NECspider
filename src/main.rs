@@ -55,7 +55,7 @@ async fn findAuthor(id: i32) -> Result<(), reqwest::Error> {
 
 async fn retry_on_err<T, E, F, Fut>(f: F)
 where
-    E: std::fmt::Debug
+    E: std::fmt::Debug,
     F: Fn() -> Fut,
     Fut: Future<Output = Result<T, E>>,
 {
