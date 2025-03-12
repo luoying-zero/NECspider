@@ -11,9 +11,9 @@ use tokio::task::JoinSet;
 #[tokio::main]
 async fn main() {
     let arguments = args();
-    let max_concurrent = arguments.nth(1).unwrap().parse::<i32>().unwrap();
-    let begin = arguments.next().unwrap().parse::<i32>().unwrap();
-    let end = arguments.next().unwrap().parse::<i32>().unwrap();
+    let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
+    let begin = arguments.next().unwrap().parse::<u64>().unwrap();
+    let end = arguments.next().unwrap().parse::<u64>().unwrap();
     //let ids: Vec<u64> = (1..=10).into_iter().collect();
     let mut join_set = JoinSet::new();
 
@@ -35,7 +35,7 @@ async fn main() {
     println!("ALL DONE");
 }
 
-async fn findAuthor(id: i32) -> Result<(), reqwest::Error> {
+async fn findAuthor(id: u64) -> Result<(), reqwest::Error> {
     let res = reqwest::Client::new()
         .get(format!("https://music.163.com/playlist?id={}", id))
         .send()
