@@ -23,13 +23,14 @@ async fn main() {
                 .send()
                 .await?
                 .text()
-                .await?;
+                .await
+                .unwrap();
             let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
-            if let Some(name) = scraper::Html::parse_document(&res).select(&select).next() {
-                if name.value().name() == "PurionPurion" {
-                    println!("{:?}", id);
-                }
+            let name = scraper::Html::parse_document(&res).select(&select).next().unwrap();
+            if name.value().name() == "PurionPurion" {
+                println!("{:?}", id);
             }
+            
             Ok(())
         });
     }
