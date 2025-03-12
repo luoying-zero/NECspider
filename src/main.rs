@@ -5,7 +5,7 @@ use scraper;
 use tokio;
 //use tokio::time::{sleep, Duration};
 use tokio::task::JoinSet;
-use rand;
+//use rand;
 
 #[tokio::main]
 async fn main() {
@@ -51,15 +51,15 @@ where
     F: Fn() -> Fut,
     Fut: Future<Output = Result<T, E>>,
 {
-    let now = Instant::now();
+    //let now = Instant::now();
     let backoff = Duration::from_millis(500);
-    let factor = 1.5;
-    let limit = Duration::from_secs(60 * 2);
-    let warn = Duration::from_secs(60 * 60);
-    let mut rng = rand::rngs::OsRng;
-    let mut jitter = || rng.gen_range(Duration::ZERO..backoff);
+    //let factor = 1.5;
+    //let limit = Duration::from_secs(60 * 2);
+    //let warn = Duration::from_secs(60 * 60);
+    //let mut rng = rand::rngs::OsRng;
+    //let mut jitter = || rng.gen_range(Duration::ZERO..backoff);
 
-    loop {
+    for _ in 0..10 {
         match f().await {
             Ok(val) => return val,
             Err(_) => {
@@ -68,8 +68,8 @@ where
                     //let elapsed = humantime::format_duration(elapsed);
                     //error!(%elapsed);
                 //}
-                let retry_in = backoff.mul_f32(factor).min(limit) + jitter();
-                tokio::time::sleep(retry_in).await;
+                //let retry_in = backoff.mul_f32(factor).min(limit) + jitter();
+                tokio::time::sleep(backoff).await;
             }
         }
     }
