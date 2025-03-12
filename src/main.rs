@@ -46,7 +46,7 @@ async fn main() {
 }
 
 
-async fn retry_on_err<T, E, F, Fut>(f: F)
+async fn retry_on_err<T, E, F, Fut>(f: F, id: i32)
 where
     F: Fn() -> Fut,
     Fut: Future<Output = Result<T, E>>,
@@ -60,8 +60,8 @@ where
     //let mut jitter = || rng.gen_range(Duration::ZERO..backoff);
 
     for _ in 0..10 {
-        match f().await {
-            Ok(val) => {
+        match f(id).await {
+            Ok(_) => {
                 break;
             },
             Err(_) => {
