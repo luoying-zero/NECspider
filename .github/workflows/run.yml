@@ -20,4 +20,4 @@ jobs:
       with:
         name: spider
         path:  |
-          ./.git
+          /.git
