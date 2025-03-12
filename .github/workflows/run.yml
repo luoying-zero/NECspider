@@ -20,5 +20,4 @@ jobs:
       with:
         name: spider
         path:  |
-          ./Cargo.lock
           ./.git
