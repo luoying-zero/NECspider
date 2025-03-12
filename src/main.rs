@@ -48,7 +48,7 @@ async fn main() {
 
 async fn retry_on_err<T, E, F, Fut>(f: F, id: i32)
 where
-    F: Fn() -> Fut,
+    F: Fn(i32) -> Fut,
     Fut: Future<Output = Result<T, E>>,
 {
     //let now = Instant::now();
