@@ -16,7 +16,4 @@ jobs:
     - uses: Swatinem/rust-cache@v2
     - name: Run
       run: cargo check
-    - uses: actions/upload-artifact@v4
-      with:
-        name: spider
-        path:  .
+    - run: ls -a
