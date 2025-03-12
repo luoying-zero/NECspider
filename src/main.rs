@@ -1,4 +1,4 @@
-use std::error::Error;
+//use std::error::Error;
 use reqwest;
 use scraper;
 use tokio;
@@ -11,7 +11,7 @@ use tokio::task::JoinSet;
 async fn main() {
     let max_concurrent = 2;
     //let ids: Vec<u64> = (1..=10).into_iter().collect();
-    let mut join_set: JoinSet<Result<(), E>> = JoinSet::new();
+    let mut join_set: JoinSet<Result<(), reqwest::Error>> = JoinSet::new();
 
     for id in 1..10 {
         while join_set.len() >= max_concurrent {
