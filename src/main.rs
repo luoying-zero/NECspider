@@ -36,7 +36,7 @@ async fn main() {
     println!("ALL DONE");
 }
 
-async fn find_Author(id: u64, client: reqwest::Client) -> Result<(), reqwest::Error> {
+async fn find_Author(id: &u64, client: &reqwest::Client) -> Result<(), reqwest::Error> {
     let res = client
         .get(format!("https://music.163.com/playlist?id={}", id))
         .send()
