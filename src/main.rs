@@ -1,8 +1,8 @@
 use std::time::{Instant, Duration};
+use std::future::Future;
 use reqwest;
 use scraper;
 use tokio;
-use futures_core::future::Future;
 //use tokio::time::{sleep, Duration};
 use tokio::task::JoinSet;
 use rand;
