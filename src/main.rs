@@ -15,6 +15,7 @@ async fn main() {
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
     //let ids: Vec<u64> = (1..=10).into_iter().collect();
+    let client = reqwest::Client::new();
     let mut join_set = JoinSet::new();
 
     for id in begin..end {
@@ -22,7 +23,7 @@ async fn main() {
             join_set.join_next().await.unwrap().unwrap();
         }
         join_set.spawn(retry_on_err(
-            move || find_Author(id)
+            move || find_Author(id, client)
         ));
     }
 
@@ -35,8 +36,8 @@ async fn main() {
     println!("ALL DONE");
 }
 
-async fn find_Author(id: u64) -> Result<(), reqwest::Error> {
-    let res = reqwest::Client::new()
+async fn find_Author(id: u64, client: reqwest::Client) -> Result<(), reqwest::Error> {
+    let res = client
         .get(format!("https://music.163.com/playlist?id={}", id))
         .send()
         .await?
