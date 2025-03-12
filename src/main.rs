@@ -15,7 +15,6 @@ async fn main() {
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
     //let ids: Vec<u64> = (1..=10).into_iter().collect();
-    let client = reqwest::Client::new();
     let mut join_set = JoinSet::new();
 
     for id in begin..end {
@@ -23,7 +22,7 @@ async fn main() {
             join_set.join_next().await.unwrap().unwrap();
         }
         join_set.spawn(retry_on_err(
-            || find_Author(id.clone(), &client)
+            move || find_Author(id)
         ));
     }
 
@@ -36,21 +35,14 @@ async fn main() {
     println!("ALL DONE");
 }
 
-async fn find_Author(id: u64, client: &'static reqwest::Client) -> Result<(), reqwest::Error> {
-    let res = client
-        .get(format!("https://music.163.com/playlist?id={}", id))
-        .send()
-        .await?
-        .text()
-        .await
-        .unwrap();
+async fn find_Author(id: u64) -> Result<(), reqwest::Error> {
+    let res = reqwest::get(format!("https://music.163.com/playlist?id={}", id)).await?.text().await.unwrap();
     let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
     let html = scraper::Html::parse_document(&res);
     let name = html.select(&select).next().unwrap();
     if name.value().name() == "PurionPurion" {
         println!("{:?}", id);
     }
-
     Ok(())
 }
 
