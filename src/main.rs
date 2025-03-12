@@ -1,7 +1,7 @@
 use reqwest;
 use scraper;
 use std::future::Future;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use tokio;
 //use tokio::time::{sleep, Duration};
 use tokio::task::JoinSet;
@@ -62,7 +62,7 @@ where
     //let mut rng = rand::rngs::OsRng;
     //let mut jitter = || rng.gen_range(Duration::ZERO..backoff);
 
-    for _ in 0..10 {
+    for _ in 0..=5 {
         match f().await {
             Ok(_) => {
                 break;
