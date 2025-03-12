@@ -11,29 +11,15 @@ use tokio::task::JoinSet;
 async fn main() {
     let max_concurrent = 2;
     //let ids: Vec<u64> = (1..=10).into_iter().collect();
-    let mut join_set: JoinSet<Result<(), reqwest::Error>> = JoinSet::new();
+    let mut join_set = JoinSet::new();
 
     for id in 1..10 {
         while join_set.len() >= max_concurrent {
             join_set.join_next().await.unwrap().unwrap();
         }
-        join_set.spawn(async move {
-            let res = reqwest::Client::new()
-                .get(format!("https://music.163.com/playlist?id={}", id))
-                .send()
-                .await?
-                .text()
-                .await
-                .unwrap();
-            let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
-            let html = scraper::Html::parse_document(&res);
-            let name = html.select(&select).next().unwrap();
-            if name.value().name() == "PurionPurion" {
-                println!("{:?}", id);
-            }
-
-            Ok(())
-        });
+        join_set.spawn(retry_on_err(
+            || findAuthor(id)
+        ));
     }
 
     println!("DONE SPAWNING");
