@@ -23,7 +23,7 @@ async fn main() {
             join_set.join_next().await.unwrap().unwrap();
         }
         join_set.spawn(retry_on_err(
-            || find_Author(id, client)
+            || find_Author(&id, &client)
         ));
     }
 
