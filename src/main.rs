@@ -3,10 +3,10 @@ use scraper;
 use std::env::args;
 // use std::future::Future;
 // use std::time::Duration;
-use tokio;
-use tokio::task::JoinSet;
 use backon::ExponentialBuilder;
 use backon::Retryable;
+use tokio;
+use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
@@ -21,30 +21,27 @@ async fn main() {
         while join_set.len() >= max_concurrent {
             join_set.join_next().await.unwrap().unwrap();
         }
-        join_set.spawn((move || async {
-            let res = reqwest::get(format!("https://music.163.com/playlist?id={}", id))
-                .await?
-                .text()
-                .await
-                .unwrap();
-            let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
-            let html = scraper::Html::parse_document(&res);
-            if let Some(name) = html.select(&select).next() {
-                if name.value().name() == "PurionPurion" {
-                    println!("{:?}", id);
-            }}
-            Ok(())
-        })// Retry with exponential backoff
+        join_set.spawn(
+            (move || async {
+                let res = reqwest::get(format!("https://music.163.com/playlist?id={}", id))
+                    .await?
+                    .text()
+                    .await
+                    .unwrap();
+                let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
+                let html = scraper::Html::parse_document(&res);
+                if let Some(name) = html.select(&select).next() {
+                    if name.value().name() == "PurionPurion" {
+                        println!("{:?}", id);
+                    }
+                }
+                Ok(())
+            })
             .retry(ExponentialBuilder::default())
-          // Sleep implementation, default to tokio::time::sleep if `tokio-sleep` has been enabled.
             .sleep(tokio::time::sleep)
-           // When to retry
-            .when(|e| e.to_string() == "EOF")
+            // When to retry
+            .when(|e| e.to_string() == "EOF"),
         )
-         // Notify when retrying
-          // .notify(|err: &anyhow::Error, dur: Duration| {
-              // println!("retrying {:?} after {:?}", err, dur);
-          // }));
     }
 
     println!("DONE SPAWNING");
@@ -57,54 +54,54 @@ async fn main() {
 }
 
 // async fn find_Author(id: u64) -> Result<(), reqwest::Error> {
-    // let res = reqwest::get(format!("https://music.163.com/playlist?id={}", id))
-        // .await?
-        // .text()
-        // .await
-        // .unwrap();
-    // let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
-    // let html = scraper::Html::parse_document(&res);
-    // if let Some(name) = html.select(&select).next() {
-        // if name.value().name() == "PurionPurion" {
-            // println!("{:?}", id);
-    // }}
-    // Ok(())
+// let res = reqwest::get(format!("https://music.163.com/playlist?id={}", id))
+// .await?
+// .text()
+// .await
+// .unwrap();
+// let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
+// let html = scraper::Html::parse_document(&res);
+// if let Some(name) = html.select(&select).next() {
+// if name.value().name() == "PurionPurion" {
+// println!("{:?}", id);
+// }}
+// Ok(())
 // }
 
 // async fn retry_on_err<T, E, F, Fut>(f: F)
 // where
-    // E: std::fmt::Debug,
-    // F: Fn() -> Fut,
-    // Fut: Future<Output = Result<T, E>>,
+// E: std::fmt::Debug,
+// F: Fn() -> Fut,
+// Fut: Future<Output = Result<T, E>>,
 // {
-    // let maxtry = 5;
-    // //let now = Instant::now();
-    // let backoff = Duration::from_millis(500);
-    // //let factor = 1.5;
-    // //let limit = Duration::from_secs(60 * 2);
-    // //let warn = Duration::from_secs(60 * 60);
-    // //let mut rng = rand::rngs::OsRng;
-    // //let mut jitter = || rng.gen_range(Duration::ZERO..backoff);
+// let maxtry = 5;
+// //let now = Instant::now();
+// let backoff = Duration::from_millis(500);
+// //let factor = 1.5;
+// //let limit = Duration::from_secs(60 * 2);
+// //let warn = Duration::from_secs(60 * 60);
+// //let mut rng = rand::rngs::OsRng;
+// //let mut jitter = || rng.gen_range(Duration::ZERO..backoff);
 
-    // for i in 0..=maxtry {
-        // match f().await {
-            // Ok(_) => {
-                // break;
-            // }
-            // Err(e) => {
-                // //let elapsed = now.elapsed();
-                // //if elapsed > warn {
-                // //let elapsed = humantime::format_duration(elapsed);
-                // //error!(%elapsed);
-                // //}
-                // //let retry_in = backoff.mul_f32(factor).min(limit) + jitter();
-                // if i == maxtry {
-                    // println!("{:?}", e);
-                // }
-                // tokio::time::sleep(backoff).await;
-            // }
-        // }
-    // }
+// for i in 0..=maxtry {
+// match f().await {
+// Ok(_) => {
+// break;
+// }
+// Err(e) => {
+// //let elapsed = now.elapsed();
+// //if elapsed > warn {
+// //let elapsed = humantime::format_duration(elapsed);
+// //error!(%elapsed);
+// //}
+// //let retry_in = backoff.mul_f32(factor).min(limit) + jitter();
+// if i == maxtry {
+// println!("{:?}", e);
+// }
+// tokio::time::sleep(backoff).await;
+// }
+// }
+// }
 // }
 
 // async fn my_bg_task(id: u64) {
