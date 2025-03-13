@@ -15,7 +15,7 @@ async fn main() {
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
     //let ids: Vec<u64> = (1..=10).into_iter().collect();
-    let mut join_set = JoinSet::new();
+    let mut join_set: JoinSet<Result<(), reqwest::Error>> = JoinSet::new();
 
     for id in begin..end {
         while join_set.len() >= max_concurrent {
@@ -39,8 +39,6 @@ async fn main() {
             })
             .retry(ExponentialBuilder::default())
             .sleep(tokio::time::sleep)
-            // When to retry
-            //.when(|e:&reqwest::Error| e.to_string() == "EOF"),
         );
     }
 
