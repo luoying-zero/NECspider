@@ -21,7 +21,7 @@ async fn main() {
         while join_set.len() >= max_concurrent {
             join_set.join_next().await.unwrap().unwrap();
         }
-        join_set.spawn(move || async {
+        join_set.spawn((move || async {
             let res = reqwest::get(format!("https://music.163.com/playlist?id={}", id))
                 .await?
                 .text()
@@ -34,7 +34,7 @@ async fn main() {
                     println!("{:?}", id);
             }}
             Ok(())
-        }// Retry with exponential backoff
+        })// Retry with exponential backoff
             .retry(ExponentialBuilder::default())
           // Sleep implementation, default to tokio::time::sleep if `tokio-sleep` has been enabled.
             .sleep(tokio::time::sleep)
