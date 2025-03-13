@@ -40,7 +40,7 @@ async fn main() {
             .retry(ExponentialBuilder::default())
             .sleep(tokio::time::sleep)
             // When to retry
-            .when(|e| e.to_string() == "EOF"),
+            //.when(|e:&reqwest::Error| e.to_string() == "EOF"),
         );
     }
 
