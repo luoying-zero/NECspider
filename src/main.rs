@@ -22,7 +22,7 @@ async fn main() {
             join_set.join_next().await.unwrap().unwrap();
         }
         join_set.spawn(
-            (move || async {
+            (move || async move {
                 let res = reqwest::get(format!("https://music.163.com/playlist?id={}", id))
                     .await?
                     .text()
