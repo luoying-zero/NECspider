@@ -21,25 +21,23 @@ async fn main() {
         while join_set.len() >= max_concurrent {
             join_set.join_next().await.unwrap().unwrap();
         }
-        join_set.spawn(
-            async move {
-                let res = (move || reqwest::get(format!("https://music.163.com/playlist?id={}", id)))
+        join_set.spawn(async move {
+            let res = (move || reqwest::get(format!("https://music.163.com/playlist?id={}", id)))
                 .retry(ConstantBuilder::default())
                 .sleep(tokio::time::sleep)
                 .await?
                 .text()
                 .await
                 .unwrap();
-                let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
-                let html = scraper::Html::parse_document(&res);
-                if let Some(name) = html.select(&select).next() {
-                    if name.value().name() == "PurionPurion" {
-                        println!("{:?}", id);
-                    }
+            let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
+            let html = scraper::Html::parse_document(&res);
+            if let Some(name) = html.select(&select).next() {
+                if name.value().name() == "PurionPurion" {
+                    println!("{:?}", id);
                 }
-                Ok(())
             }
-        );
+            Ok(())
+        });
     }
 
     println!("DONE SPAWNING");
