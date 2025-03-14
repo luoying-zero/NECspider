@@ -22,7 +22,7 @@ async fn main() {
         while join_set.len() >= max_concurrent {
             join_set.join_next().await.unwrap().unwrap();
         }
-        join_set.spawn(async move {
+        join_set.spawn_blocking(async move {
             let res = (move || reqwest::get(format!("https://music.163.com/playlist?id={}", id)))
                 .retry(ConstantBuilder::default()
                     .with_delay(Duration::from_millis(0)))
