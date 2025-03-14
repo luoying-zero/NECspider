@@ -1,6 +1,7 @@
 use reqwest;
 use scraper;
 use std::env::args;
+use std::time::Duration;
 // use std::future::Future;
 // use std::time::Duration;
 use backon::ConstantBuilder;
@@ -23,8 +24,8 @@ async fn main() {
         }
         join_set.spawn(async move {
             let res = (move || reqwest::get(format!("https://music.163.com/playlist?id={}", id)))
-                .retry(ConstantBuilder::default())
-                .sleep(tokio::time::sleep)
+                .retry(ConstantBuilder::default()
+                    .with_delay(Duration::from_millis(0)))
                 .await?
                 .text()
                 .await
