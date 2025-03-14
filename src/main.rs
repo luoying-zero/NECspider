@@ -3,7 +3,7 @@ use scraper;
 use std::env::args;
 // use std::future::Future;
 // use std::time::Duration;
-use backon::ExponentialBuilder;
+use backon::ConstantBuilder;
 use backon::Retryable;
 use tokio;
 use tokio::task::JoinSet;
@@ -37,7 +37,7 @@ async fn main() {
                 }
                 Ok(())
             })
-            .retry(ExponentialBuilder::default())
+            .retry(ConstantBuilder::default())
             .sleep(tokio::time::sleep)
         );
     }
