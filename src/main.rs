@@ -22,8 +22,8 @@ async fn main() {
             join_set.join_next().await.unwrap().unwrap();
         }
         join_set.spawn(
-                let res = async move {
-                (move || reqwest::get(format!("https://music.163.com/playlist?id={}", id)))
+            async move {
+                let res = (move || reqwest::get(format!("https://music.163.com/playlist?id={}", id)))
                 .retry(ConstantBuilder::default())
                 .sleep(tokio::time::sleep)
                 .await?
