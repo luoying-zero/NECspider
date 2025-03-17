@@ -15,14 +15,13 @@ async fn main() {
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
-    //let ids: Vec<u64> = (1..=10).into_iter().collect();
     let mut join_set: JoinSet<Result<(), reqwest::Error>> = JoinSet::new();
 
     for id in begin..end {
         while join_set.len() >= max_concurrent {
             join_set.join_next().await.unwrap().unwrap();
         }
-        join_set.spawn_blocking(move || {
+        join_set.spawn(move || {
             let res = (move || reqwest::get(format!("https://music.163.com/playlist?id={}", id)))
                 .retry(ConstantBuilder::default()
                     .with_delay(Duration::from_millis(0)))
