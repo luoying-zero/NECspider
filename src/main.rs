@@ -52,7 +52,7 @@ async fn main() {
     println!("DONE SPAWNING");
 
 	let mut output = Vec::new();
-	while let Some(res) = set.join_next().await{
+	while let Some(res) = join_set.join_next().await{
         match res {
             Ok(id) => output.push(id),
             Ok(None) => (),
