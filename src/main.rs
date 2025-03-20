@@ -41,7 +41,7 @@ async fn main() {
                 .unwrap();
             drop(permit);
             if check_bytes_sequence(&res, &filed, &author) {
-            	return Ok(id)
+            	return Ok(Some(id));
             }
             // let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
             // let html = scraper::Html::parse_document(&res);
@@ -50,7 +50,7 @@ async fn main() {
                     // println!("{:?}", id);
                 // }
             // }
-            Ok(())
+            Ok(None)
         });
     }
 

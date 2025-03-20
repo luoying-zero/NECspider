@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+backon = "1.4.0"
+bytes = "1"
 reqwest = "0.12.12"
 scraper = "0.23.1"
 tokio = { version = "1.44.0", features = ["full"] }
-backon = "1.4.0"
