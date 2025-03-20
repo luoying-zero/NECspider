@@ -54,7 +54,7 @@ async fn main() {
 	let mut output = Vec::new();
 	while let Some(res) = join_set.join_next().await{
         match res {
-            Ok(id) => output.push(id),
+            Ok(Some(id)) => output.push(id),
             Ok(None) => (),
             Err(err) => panic!("{err}"),
         }
