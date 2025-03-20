@@ -1,17 +1,20 @@
 use backon::ConstantBuilder;
 use backon::Retryable;
+use bytes::Bytes;
 use reqwest;
+use scraper;
 use std::env::args;
 use std::sync::Arc;
 use std::time::Duration;
 // use std::future::Future;
 // use std::time::Duration;
-use scraper;
 use tokio;
 use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
+	let filed = Bytes::from("");
+	let author = Bytes::from("");
     let mut arguments = args();
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
@@ -27,25 +30,26 @@ async fn main() {
         let client_clone = client.clone();
         let permit = semaphore.clone().acquire_owned().await.unwrap();
         join_set.spawn(async move {
-            let req = move || {
-                client_clone
-                    .get(format!("https://music.163.com/playlist?id={}", id))
-                    .send()
-            };
+            let req = move || client_clone
+                .get(format!("https://music.163.com/playlist?id={}", id))
+                .send();
             let res = req
                 .retry(ConstantBuilder::default().with_delay(Duration::from_millis(0)))
                 .await?
-                .text()
+                .bytes()
                 .await
                 .unwrap();
             drop(permit);
-            let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
-            let html = scraper::Html::parse_document(&res);
-            if let Some(name) = html.select(&select).next() {
-                if name.value().name() == "PurionPurion" {
-                    println!("{:?}", id);
-                }
+            if check_bytes_sequence(&res, &filed, &author) {
+            	return Ok(id)
             }
+            // let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
+            // let html = scraper::Html::parse_document(&res);
+            // if let Some(name) = html.select(&select).next() {
+                // if name.value().name() == "PurionPurion" {
+                    // println!("{:?}", id);
+                // }
+            // }
             Ok(())
         });
     }
@@ -59,60 +63,26 @@ async fn main() {
     println!("ALL DONE");
 }
 
-// async fn find_Author(id: u64) -> Result<(), reqwest::Error> {
-// let res = reqwest::get(format!("https://music.163.com/playlist?id={}", id))
-// .await?
-// .text()
-// .await
-// .unwrap();
-// let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
-// let html = scraper::Html::parse_document(&res);
-// if let Some(name) = html.select(&select).next() {
-// if name.value().name() == "PurionPurion" {
-// println!("{:?}", id);
-// }}
-// Ok(())
-// }
+pub fn check_bytes_sequence(haystack: &Bytes, needle1: &Bytes, needle2: &Bytes) -> bool {
+    // 将Bytes转换为字节切片，因为Bytes实现了Deref<Target = [u8]>
+    // let haystack = &**haystack;
+    // let needle1 = &**needle1;
+    // let needle2 = &**needle2;
+    let haystack = haystack.as_bytes();
+    let needle1 = needle1.as_bytes();
+    let needle2 = needle2.as_bytes();
 
-// async fn retry_on_err<T, E, F, Fut>(f: F)
-// where
-// E: std::fmt::Debug,
-// F: Fn() -> Fut,
-// Fut: Future<Output = Result<T, E>>,
-// {
-// let maxtry = 5;
-// //let now = Instant::now();
-// let backoff = Duration::from_millis(500);
-// //let factor = 1.5;
-// //let limit = Duration::from_secs(60 * 2);
-// //let warn = Duration::from_secs(60 * 60);
-// //let mut rng = rand::rngs::OsRng;
-// //let mut jitter = || rng.gen_range(Duration::ZERO..backoff);
+    // 查找第一个子序列的位置
+    if let Some(pos) = find_subsequence(haystack, needle1) {
+        // 检查剩余部分是否以第二个子序列开头
+        let remaining = &haystack[pos + needle1.len()..];
+        remaining.starts_with(needle2)
+    } else {
+        false
+    }
+}
 
-// for i in 0..=maxtry {
-// match f().await {
-// Ok(_) => {
-// break;
-// }
-// Err(e) => {
-// //let elapsed = now.elapsed();
-// //if elapsed > warn {
-// //let elapsed = humantime::format_duration(elapsed);
-// //error!(%elapsed);
-// //}
-// //let retry_in = backoff.mul_f32(factor).min(limit) + jitter();
-// if i == maxtry {
-// println!("{:?}", e);
-// }
-// tokio::time::sleep(backoff).await;
-// }
-// }
-// }
-// }
-
-// async fn my_bg_task(id: u64) {
-// let num: u64 = thread_rng().gen_range(10..200);
-// println!("START id: {} with {}ms", id, num);
-// sleep(Duration::from_millis(num)).await;
-// println!("STOP id: {}", id);
-// }
+/// 辅助函数：在字节切片中查找子序列的位置。
+fn find_subsequence(haystack: &[u8], needle: &[u8]) -> Option<usize> {
+    haystack.windows(needle.len()).position(|window| window == needle)
+}
