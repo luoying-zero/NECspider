@@ -45,21 +45,19 @@ async fn main() {
             if check_bytes_sequence(&res, filed, author) {
             	return Ok(Some(id));
             }
-            // let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
-            // let html = scraper::Html::parse_document(&res);
-            // if let Some(name) = html.select(&select).next() {
-                // if name.value().name() == "PurionPurion" {
-                    // println!("{:?}", id);
-                // }
-            // }
             Ok(None)
         });
     }
 
     println!("DONE SPAWNING");
 
-    while let Some(output) = join_set.join_next().await {
-        output.unwrap();
+	let mut output = Vec::new();
+	while let Some(res) = set.join_next().await{
+        match res {
+            Ok(id) => output.push(id),
+            Ok(None) => (),
+            Err(err) => panic!("{err}"),
+        }
     }
 
     println!("ALL DONE");
@@ -82,3 +80,14 @@ pub fn check_bytes_sequence(haystack: &Bytes, needle1: &[u8], needle2: &[u8]) ->
 fn find_subsequence(haystack: &[u8], needle: &[u8]) -> Option<usize> {
     haystack.windows(needle.len()).position(|window| window == needle)
 }
+
+
+
+
+            // let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
+            // let html = scraper::Html::parse_document(&res);
+            // if let Some(name) = html.select(&select).next() {
+                // if name.value().name() == "PurionPurion" {
+                    // println!("{:?}", id);
+                // }
+            // }
