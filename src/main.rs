@@ -38,7 +38,7 @@ async fn main() {
                 .text()
                 .await
                 .unwrap();
-            drop(permit)
+            drop(permit);
             let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
             let html = scraper::Html::parse_document(&res);
             if let Some(name) = html.select(&select).next() {
