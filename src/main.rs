@@ -19,7 +19,7 @@ async fn main() {
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
-    let mut join_set: JoinSet<Result<(), reqwest::Error>> = JoinSet::new();
+    let mut join_set: JoinSet<Result<Option<u64>, reqwest::Error>> = JoinSet::new();
     let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
     let client = reqwest::Client::new();
 
