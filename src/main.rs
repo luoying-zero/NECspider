@@ -13,8 +13,8 @@ use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
-	let filed = Bytes::from("");
-	let author = Bytes::from("");
+	let filed: &[u8] = b"";
+	let author: &[u8] = b"";
     let mut arguments = args();
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
@@ -27,6 +27,8 @@ async fn main() {
         // while join_set.len() >= max_concurrent {
             // join_set.join_next().await.unwrap().unwrap();
         // }
+        let filed = filed.clone();
+        let author = author.clone();
         let client_clone = client.clone();
         let permit = semaphore.clone().acquire_owned().await.unwrap();
         join_set.spawn(async move {
@@ -40,7 +42,7 @@ async fn main() {
                 .await
                 .unwrap();
             drop(permit);
-            if check_bytes_sequence(&res, &filed, &author) {
+            if check_bytes_sequence(&res, filed, author) {
             	return Ok(Some(id));
             }
             // let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
@@ -65,13 +67,7 @@ async fn main() {
 
 pub fn check_bytes_sequence(haystack: &Bytes, needle1: &Bytes, needle2: &Bytes) -> bool {
     // 将Bytes转换为字节切片，因为Bytes实现了Deref<Target = [u8]>
-    // let haystack = &**haystack;
-    // let needle1 = &**needle1;
-    // let needle2 = &**needle2;
-    let haystack = haystack.as_bytes();
-    let needle1 = needle1.as_bytes();
-    let needle2 = needle2.as_bytes();
-
+    let haystack = &**haystack;
     // 查找第一个子序列的位置
     if let Some(pos) = find_subsequence(haystack, needle1) {
         // 检查剩余部分是否以第二个子序列开头
