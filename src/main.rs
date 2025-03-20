@@ -16,13 +16,15 @@ async fn main() {
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
     let mut join_set: JoinSet<Result<(), reqwest::Error>> = JoinSet::new();
+	let client = reqwest::Client::new();
 
     for id in begin..end {
         while join_set.len() >= max_concurrent {
             join_set.join_next().await.unwrap().unwrap();
         }
+        client_clone = client.clone();
         join_set.spawn(move || {
-            let res = (move || reqwest::get(format!("https://music.163.com/playlist?id={}", id)))
+            let res = (move || client_clone.get(format!("https://music.163.com/playlist?id={}", id)))
                 .retry(ConstantBuilder::default()
                     .with_delay(Duration::from_millis(0)))
                 .await?
