@@ -17,7 +17,7 @@ async fn main() {
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
     let mut join_set: JoinSet<Result<(), reqwest::Error>> = JoinSet::new();
-    let semaphore = tokio::sync::Semaphore::new(max_concurrent);
+    let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
     let client = reqwest::Client::new();
 
     for id in begin..end {
@@ -25,7 +25,7 @@ async fn main() {
             // join_set.join_next().await.unwrap().unwrap();
         // }
         let client_clone = client.clone();
-        let permit = semaphore.acquire().await.unwrap();
+        let permit = semaphore.clone().acquire_owned().await.unwrap();
         join_set.spawn(async move {
             let req = move || {
                 client_clone
