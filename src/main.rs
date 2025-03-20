@@ -23,10 +23,10 @@ async fn main() {
             join_set.join_next().await.unwrap().unwrap();
         }
         let client_clone = client.clone();
-        join_set.spawn(async move || {
-            let res = (move || async {
+        join_set.spawn(async move {
+            let res = (move ||
             	client_clone.get(format!("https://music.163.com/playlist?id={}", id))
-            })
+            )
                 .retry(ConstantBuilder::default()
                     .with_delay(Duration::from_millis(0)))
                 .await?
