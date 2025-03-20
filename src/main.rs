@@ -65,7 +65,7 @@ async fn main() {
     println!("ALL DONE");
 }
 
-pub fn check_bytes_sequence(haystack: &Bytes, needle1: &Bytes, needle2: &Bytes) -> bool {
+pub fn check_bytes_sequence(haystack: &Bytes, needle1: &[u8], needle2: &[u8]) -> bool {
     // 将Bytes转换为字节切片，因为Bytes实现了Deref<Target = [u8]>
     let haystack = &**haystack;
     // 查找第一个子序列的位置
