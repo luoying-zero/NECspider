@@ -16,20 +16,29 @@ async fn main() {
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
     let mut join_set: JoinSet<Result<(), reqwest::Error>> = JoinSet::new();
-	let client = reqwest::Client::new();
+    let let semaphore = tokio::sync::Semaphore::new(max_concurrent);
+    let client = reqwest::Client::new();
 
     for id in begin..end {
-        while join_set.len() >= max_concurrent {
-            join_set.join_next().await.unwrap().unwrap();
-        }
+        // while join_set.len() >= max_concurrent {
+            // join_set.join_next().await.unwrap().unwrap();
+        // }
+        let semaphore = semaphore.clone();
         let client_clone = client.clone();
+        let permit = semaphore.acquire().await.unwrap();
         join_set.spawn(async move {
-        	let req = move || client_clone.get(format!("https://music.163.com/playlist?id={}", id)).send();
-            let res = req.retry(ConstantBuilder::default().with_delay(Duration::from_millis(0)))
+            let req = move || {
+                client_clone
+                    .get(format!("https://music.163.com/playlist?id={}", id))
+                    .send()
+            };
+            let res = req
+                .retry(ConstantBuilder::default().with_delay(Duration::from_millis(0)))
                 .await?
                 .text()
                 .await
                 .unwrap();
+            drop(permit)
             let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
             let html = scraper::Html::parse_document(&res);
             if let Some(name) = html.select(&select).next() {
