@@ -16,7 +16,7 @@ async fn main() {
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
     let mut join_set: JoinSet<Result<(), reqwest::Error>> = JoinSet::new();
-    let let semaphore = tokio::sync::Semaphore::new(max_concurrent);
+    let semaphore = tokio::sync::Semaphore::new(max_concurrent);
     let client = reqwest::Client::new();
 
     for id in begin..end {
