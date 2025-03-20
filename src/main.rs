@@ -17,14 +17,13 @@ async fn main() {
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
     let mut join_set: JoinSet<Result<(), reqwest::Error>> = JoinSet::new();
-    let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
+    let semaphore = tokio::sync::Semaphore::new(max_concurrent);
     let client = reqwest::Client::new();
 
     for id in begin..end {
         // while join_set.len() >= max_concurrent {
             // join_set.join_next().await.unwrap().unwrap();
         // }
-        let semaphore = semaphore.clone();
         let client_clone = client.clone();
         let permit = semaphore.acquire().await.unwrap();
         join_set.spawn(async move {
