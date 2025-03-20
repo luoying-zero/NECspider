@@ -1,11 +1,12 @@
+use backon::ConstantBuilder;
+use backon::Retryable;
 use reqwest;
-use scraper;
 use std::env::args;
+use std::sync::Arc;
 use std::time::Duration;
 // use std::future::Future;
 // use std::time::Duration;
-use backon::ConstantBuilder;
-use backon::Retryable;
+use scraper;
 use tokio;
 use tokio::task::JoinSet;
 
@@ -16,7 +17,7 @@ async fn main() {
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
     let mut join_set: JoinSet<Result<(), reqwest::Error>> = JoinSet::new();
-    let semaphore = tokio::sync::Semaphore::new(max_concurrent);
+    let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
     let client = reqwest::Client::new();
 
     for id in begin..end {
