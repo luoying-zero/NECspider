@@ -46,7 +46,7 @@ async fn main() {
         join_set.spawn(async move {
             let mut params = HashMap::new();
             params.insert("id", format!("{id}"));
-            let req = || async {
+            let req = || async -> Result<Bytes, reqwest::Error> {
                 client_clone
                     .post("http://music.163.com/api/v6/playlist/detail")
                     .form(&params)
