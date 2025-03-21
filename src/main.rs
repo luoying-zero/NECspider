@@ -26,7 +26,6 @@ async fn main() {
         .timeout(Duration::from_millis(10000))
         .pool_idle_timeout(None)
         .pool_max_idle_per_host(usize::MAX)
-        .http2_prior_knowledge()
         .build()
         .unwrap();
 
@@ -41,10 +40,6 @@ async fn main() {
         join_set.spawn(async move {
             let mut params = HashMap::new();
             params.insert("id", format!("{id}"));
-            let requestbuilder = client_clone
-                .post("http://music.163.com/api/v6/playlist/detail")
-                .form(&params);
-            println!("{requestbuilder:?}");
             let req = move || {
                 client_clone
                     .post("http://music.163.com/api/v6/playlist/detail")
