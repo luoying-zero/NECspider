@@ -39,8 +39,8 @@ async fn main() {
         let author = author.clone();
         let client_clone = client.clone();
         let permit = semaphore.clone().acquire_owned().await.unwrap();
-        if (id-begin)%((end-begin)/100) == 0 {
-            bar.set_position(id - begin - (end - begin)/100);
+        if (id - begin) % ((end - begin) / 100) == 0 {
+            bar.set_position(id - begin - (end - begin) / 100);
         }
         join_set.spawn(async move {
             let mut params = HashMap::new();
