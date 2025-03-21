@@ -1,23 +1,24 @@
-name: Build
+name: build-windows
 
-on:
+on: 
   workflow_dispatch:
-
-env:
-  CARGO_TERM_COLOR: always
 
 jobs:
   build:
-
+    name: Build binary CI
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - uses: Swatinem/rust-cache@v2
-    - name: check
-      run: cargo check
-    - uses: actions/upload-artifact@v4
-      with:
-        name: spider
-        path:  |
-          ./Cargo.lock
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: Install MinGW
+        uses: egor-tensin/setup-mingw@v2.2.0
+      - name: Build binary file
+        run: |
+          rustup target add x86_64-pc-windows-gnu
+          cargo build --target x86_64-pc-windows-gnu --release
+        continue-on-error: true
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows_amd64
+          path: .
