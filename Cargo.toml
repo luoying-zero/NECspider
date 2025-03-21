@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 backon = "1.4.0"
 bytes = "1"
+console = "0.15.11"
 indicatif = "0.17.11"
 reqwest = { version = "0.12.15", default-features = true }
 tokio = { version = "1.44.0", features = ["full"] }
