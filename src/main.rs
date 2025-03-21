@@ -13,8 +13,8 @@ use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
-	let filed: &[u8] = b"";
-	let author: &[u8] = b"";
+	let filed = Bytes::from_static(b"");
+	let author = Bytes::from_static(b"");
     let mut arguments = args();
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
@@ -54,18 +54,19 @@ async fn main() {
 	let mut output = Vec::new();
 	while let Some(res) = join_set.join_next().await{
         match res {
-            Ok(Some(id)) => output.push(id),
-            Ok(None) => (),
-            Err(err) => panic!("{err}"),
+            Ok(Ok(Some(id))) => output.push(id),
+            Ok(Ok(None)) => (),
+            Ok(Err(e)) => eprintln!("Reqwest错误: {}", e),
+            Err(err) => eprintln!("Join错误: {}", err),
         }
     }
 
     println!("ALL DONE");
 }
 
-pub fn check_bytes_sequence(haystack: &Bytes, needle1: &[u8], needle2: &[u8]) -> bool {
+pub fn check_bytes_sequence(haystack: &Bytes, needle1: &Bytes, needle2: &Bytes) -> bool {
     // 将Bytes转换为字节切片，因为Bytes实现了Deref<Target = [u8]>
-    let haystack = &**haystack;
+    // let haystack = &**haystack;
     // 查找第一个子序列的位置
     if let Some(pos) = find_subsequence(haystack, needle1) {
         // 检查剩余部分是否以第二个子序列开头
@@ -77,7 +78,7 @@ pub fn check_bytes_sequence(haystack: &Bytes, needle1: &[u8], needle2: &[u8]) ->
 }
 
 /// 辅助函数：在字节切片中查找子序列的位置。
-fn find_subsequence(haystack: &[u8], needle: &[u8]) -> Option<usize> {
+fn find_subsequence(haystack: &Bytes, needle: &Bytes) -> Option<usize> {
     haystack.windows(needle.len()).position(|window| window == needle)
 }
 
