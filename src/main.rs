@@ -46,7 +46,10 @@ async fn main() {
                 .form(&params);
             println!("{requestbuilder:?}");
             let req = move || {
-                requestbuilder.send()
+                client_clone
+                    .post("http://music.163.com/api/v6/playlist/detail")
+                    .form(&params);
+                    .send()
             };
             let res = req
                 .retry(ConstantBuilder::default().with_delay(Duration::from_millis(0)))
