@@ -66,7 +66,8 @@ async fn main() {
             }
         });
     }
-
+    
+    bar.finish();
     println!("DONE SPAWNING");
 
     //let mut output = Vec::new();
