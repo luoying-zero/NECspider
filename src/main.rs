@@ -24,6 +24,7 @@ async fn main() {
     let mut join_set: JoinSet<Result<Option<u64>, reqwest::Error>> = JoinSet::new();
     let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
     let bar = ProgressBar::new(end - begin);
+    bar.tick();
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(20))
         .pool_idle_timeout(None)
