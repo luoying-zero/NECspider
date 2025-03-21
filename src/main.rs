@@ -1,7 +1,6 @@
 use backon::ConstantBuilder;
 use backon::Retryable;
 use bytes::Bytes;
-use console::Term;
 use indicatif::ProgressBar;
 use indicatif::ProgressDrawTarget;
 use indicatif::ProgressStyle;
@@ -31,7 +30,7 @@ async fn main() {
         ProgressStyle::with_template("{bar:40} {pos:>7}/{len:7} | {elapsed}/{eta} | {per_sec}")
             .unwrap(),
     );
-    bar.set_draw_target(ProgressDrawTarget::term(Term::stdout(), 1));
+    bar.set_draw_target(ProgressDrawTarget::stdout_with_hz(1));
 
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(20))
