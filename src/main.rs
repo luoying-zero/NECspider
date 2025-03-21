@@ -2,7 +2,7 @@ use backon::ConstantBuilder;
 use backon::Retryable;
 use bytes::Bytes;
 use reqwest;
-use scraper;
+//use scraper;
 use std::env::args;
 use std::sync::Arc;
 use std::time::Duration;
@@ -53,13 +53,13 @@ async fn main() {
 
     println!("DONE SPAWNING");
 
-    let mut output = Vec::new();
+    //let mut output = Vec::new();
     while let Some(res) = join_set.join_next().await {
         match res {
-            Ok(Ok(Some(id))) => output.push(id),
+            Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\",")
             Ok(Ok(None)) => (),
-            Ok(Err(e)) => eprintln!("Reqwest错误: {}", e),
-            Err(err) => eprintln!("Join错误: {}", err),
+            Ok(Err(e)) => eprintln!("Reqwest错误: {:?}", e),
+            Err(err) => eprintln!("Join错误: {:?}", err),
         }
     }
 
