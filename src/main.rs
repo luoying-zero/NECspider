@@ -46,24 +46,17 @@ async fn main() {
         join_set.spawn(async move {
             let mut params = HashMap::new();
             params.insert("id", format!("{id}"));
-            // let req = || async {
-                // client_clone
-                    // .post("http://music.163.com/api/v6/playlist/detail")
-                    // .form(&params)
-                    // .send()
-                    // .await?
-                    // .bytes()
-                    // .await?
-            // };
-            let res = (|| async {
-                client_clone
+            let req = || async {
+                let bytes = client_clone
                     .post("http://music.163.com/api/v6/playlist/detail")
                     .form(&params)
                     .send()
                     .await?
                     .bytes()
-                    .await?
-            })
+                    .await?;
+                Ok(bytes)
+            };
+            let res = req
                 .retry(ConstantBuilder::default().with_delay(Duration::from_millis(0)))
                 .await?;
             drop(permit);
