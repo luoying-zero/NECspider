@@ -44,6 +44,7 @@ async fn main() {
             let requestbuilder = client_clone
                 .post("http://music.163.com/api/v6/playlist/detail")
                 .form(&params);
+            println!("{requestbuilder:?}")
             let req = move || {
                 requestbuilder.send()
             };
