@@ -9,10 +9,12 @@ on:
         dafault: "500"
       begin_id:
         required: false
-        type: "400000000"
+        type: string
+        dafault: "400000000"
       end_id:
         required: false
-        type: "400050000"
+        type: string
+        dafault: "400050000"
 
 env:
   CARGO_TERM_COLOR: always
