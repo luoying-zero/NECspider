@@ -70,7 +70,7 @@ pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> 
     // 将Bytes转换为字节切片，因为Bytes实现了Deref<Target = [u8]>
     // let haystack = &**haystack;
     // 查找第一个子序列的位置
-    if let Some(pos) = find_subsequence(haystack, needle1) {
+    if let Some(pos) = find_subsequence(&haystack, &needle1) {
         // 检查剩余部分是否以第二个子序列开头
         let remaining = &haystack[pos + needle1.len()..];
         remaining.starts_with(&needle2)
