@@ -44,7 +44,7 @@ async fn main() {
                 .await
                 .unwrap();
             drop(permit);
-            if check_bytes_sequence(&res, &filed, &author) {
+            if check_bytes_sequence(res, filed, author) {
                 return Ok(Some(id));
             }
             Ok(None)
@@ -66,13 +66,13 @@ async fn main() {
     println!("ALL DONE");
 }
 
-pub fn check_bytes_sequence(haystack: &Bytes, needle1: &Bytes, needle2: &Bytes) -> bool {
+pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
     // 将Bytes转换为字节切片，因为Bytes实现了Deref<Target = [u8]>
     // let haystack = &**haystack;
     // 查找第一个子序列的位置
     if let Some(pos) = find_subsequence(haystack, needle1) {
         // 检查剩余部分是否以第二个子序列开头
-        let remaining = &haystack[pos + needle1.len()..];
+        let remaining = haystack[pos + needle1.len()..];
         remaining.starts_with(needle2)
     } else {
         false
@@ -80,7 +80,7 @@ pub fn check_bytes_sequence(haystack: &Bytes, needle1: &Bytes, needle2: &Bytes) 
 }
 
 /// 辅助函数：在字节切片中查找子序列的位置。
-fn find_subsequence(haystack: &Bytes, needle: &Bytes) -> Option<usize> {
+fn find_subsequence(haystack: Bytes, needle: Bytes) -> Option<usize> {
     haystack
         .windows(needle.len())
         .position(|window| window == needle)
