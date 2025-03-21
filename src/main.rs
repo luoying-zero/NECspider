@@ -23,7 +23,7 @@ async fn main() {
     let mut join_set: JoinSet<Result<Option<u64>, reqwest::Error>> = JoinSet::new();
     let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_millis(20))
+        .timeout(Duration::from_millis(10000))
         .pool_idle_timeout(None)
         .pool_max_idle_per_host(usize::MAX)
         .http2_prior_knowledge()
