@@ -21,7 +21,13 @@ async fn main() {
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
     let mut join_set: JoinSet<Result<Option<u64>, reqwest::Error>> = JoinSet::new();
     let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+    	.timeout(Duration::from_millis(20))
+    	.pool_idle_timeout(None)
+    	.pool_max_idle_per_host(usize::MAX)
+    	.http3_prior_knowledge()
+    	.build()
+    	.unwrap();
 
     for id in begin..end {
         // while join_set.len() >= max_concurrent {
@@ -32,9 +38,11 @@ async fn main() {
         let client_clone = client.clone();
         let permit = semaphore.clone().acquire_owned().await.unwrap();
         join_set.spawn(async move {
+        	let tuple = ("id", format!("{id}"));
             let req = move || {
                 client_clone
-                    .get(format!("https://music.163.com/playlist?id={}", id))
+                    .post("http://music.163.com/api/v6/playlist/detail")
+                    .form(&tuple)
                     .send()
             };
             let res = req
