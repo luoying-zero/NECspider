@@ -3,6 +3,7 @@ use backon::Retryable;
 use bytes::Bytes;
 use reqwest;
 //use scraper;
+use std::collections::HashMap;
 use std::env::args;
 use std::sync::Arc;
 use std::time::Duration;
@@ -38,11 +39,12 @@ async fn main() {
         let client_clone = client.clone();
         let permit = semaphore.clone().acquire_owned().await.unwrap();
         join_set.spawn(async move {
-            let tuple = ("id", format!("{id}"));
+            let mut params = HashMap::new();
+            params.insert("id", format!("{id}"));
             let req = move || {
                 client_clone
                     .post("http://music.163.com/api/v6/playlist/detail")
-                    .form(&tuple)
+                    .form(&params)
                     .send()
             };
             let res = req
@@ -75,8 +77,6 @@ async fn main() {
 }
 
 pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
-    // 将Bytes转换为字节切片，因为Bytes实现了Deref<Target = [u8]>
-    // let haystack = &**haystack;
     // 查找第一个子序列的位置
     if let Some(pos) = find_subsequence(&haystack, &needle1) {
         // 检查剩余部分是否以第二个子序列开头
