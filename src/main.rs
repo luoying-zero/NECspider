@@ -52,10 +52,10 @@ async fn main() {
                 .await
                 .unwrap();
             drop(permit);
-            if check_bytes_sequence(res, filed, author) {
-                return Ok(Some(id));
+            match check_bytes_sequence(res, filed, author) {
+                true => Ok(Some(id)),
+                _ => Ok(None),
             }
-            Ok(None)
         });
     }
 
@@ -64,7 +64,7 @@ async fn main() {
     //let mut output = Vec::new();
     while let Some(res) = join_set.join_next().await {
         match res {
-            Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\",")
+            Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
             Ok(Ok(None)) => (),
             Ok(Err(e)) => eprintln!("Reqwest错误: {:?}", e),
             Err(err) => eprintln!("Join错误: {:?}", err),
