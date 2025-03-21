@@ -14,8 +14,8 @@ use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
-    let filed = Bytes::from_static(b"");
-    let author = Bytes::from_static(b"");
+    let filed = Bytes::from_static(b"\"userId\": ");
+    let author = Bytes::from_static(b"62696289,");
     let mut arguments = args();
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
