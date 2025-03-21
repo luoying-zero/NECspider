@@ -66,7 +66,7 @@ async fn main() {
             }
         });
     }
-    
+
     bar.finish();
     println!("DONE SPAWNING");
 
