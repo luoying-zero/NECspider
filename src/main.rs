@@ -40,7 +40,7 @@ async fn main() {
         let client_clone = client.clone();
         let permit = semaphore.clone().acquire_owned().await.unwrap();
         if (id - begin) % ((end - begin) / 100) == 0 {
-            bar.set_position(id - begin - (end - begin) / 100);
+            bar.inc((end - begin) / 100);
         }
         join_set.spawn(async move {
             let mut params = HashMap::new();
