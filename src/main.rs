@@ -25,7 +25,7 @@ async fn main() {
     	.timeout(Duration::from_millis(20))
     	.pool_idle_timeout(None)
     	.pool_max_idle_per_host(usize::MAX)
-    	.http3_prior_knowledge()
+    	.http2_prior_knowledge()
     	.build()
     	.unwrap();
 

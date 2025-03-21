@@ -1,2 +1,1 @@
 [env]
-RUSTFLAGS = "--cfg reqwest_unstable"
