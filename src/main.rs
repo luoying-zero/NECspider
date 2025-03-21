@@ -14,7 +14,7 @@ use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
-    let filed = Bytes::from_static(b"\"userId\": ");
+    let filed = Bytes::from_static(b"\"userId\":");
     let author = Bytes::from_static(b"62696289,");
     let mut arguments = args();
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
@@ -23,7 +23,7 @@ async fn main() {
     let mut join_set: JoinSet<Result<Option<u64>, reqwest::Error>> = JoinSet::new();
     let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
     let client = reqwest::Client::builder()
-        //.timeout(Duration::from_secs(20))
+        .timeout(Duration::from_secs(20))
         .pool_idle_timeout(None)
         .pool_max_idle_per_host(usize::MAX)
         .build()
@@ -53,7 +53,7 @@ async fn main() {
                 .await
                 .unwrap();
             drop(permit);
-            println!("{res:?}");
+            //println!("{res:?}");
             match check_bytes_sequence(res, filed, author) {
                 true => Ok(Some(id)),
                 _ => Ok(None),
