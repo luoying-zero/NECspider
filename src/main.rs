@@ -2,6 +2,8 @@ use backon::ConstantBuilder;
 use backon::Retryable;
 use bytes::Bytes;
 use indicatif::ProgressBar;
+use indicatif::ProgressStyle;
+use indicatif::ProgressDrawTarget;
 use reqwest;
 //use scraper;
 use std::collections::HashMap;
@@ -24,7 +26,11 @@ async fn main() {
     let mut join_set: JoinSet<Result<Option<u64>, reqwest::Error>> = JoinSet::new();
     let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
     let bar = ProgressBar::new(end - begin);
-    bar.tick();
+    bar.set_style(ProgressStyle::with_template(
+        "{bar:40} {pos:>7}/{len:7} | {elapsed}/{eta} | {per_sec}"
+    ).unwrap());
+    bar.set_draw_target(ProgressDrawTarget::term(1));
+
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(20))
         .pool_idle_timeout(None)
@@ -40,9 +46,10 @@ async fn main() {
         let author = author.clone();
         let client_clone = client.clone();
         let permit = semaphore.clone().acquire_owned().await.unwrap();
-        if (id - begin) % ((end - begin) / 100) == 0 {
-            bar.inc((end - begin) / 100);
-        }
+        // if (id - begin) % ((end - begin) / 100) == 0 {
+            // bar.inc((end - begin) / 100);
+        // }
+        bar.inc(1);
         join_set.spawn(async move {
             let mut params = HashMap::new();
             params.insert("id", format!("{id}"));
