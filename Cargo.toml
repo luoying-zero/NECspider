@@ -7,5 +7,5 @@ edition = "2024"
 backon = "1.4.0"
 bytes = "1"
 reqwest = "0.12.12"
-scraper = "0.23.1"
+scraper = { version = "0.23.1", feature = ["http3"], default-features = true }
 tokio = { version = "1.44.0", features = ["full"] }
