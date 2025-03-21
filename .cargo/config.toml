@@ -7,3 +7,4 @@ strip = true
 panic = "abort"
 codegen-units = 1
 embed-bitcode = false
+relocation-model = "static"
