@@ -25,5 +25,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: Swatinem/rust-cache@v2
     - name: Run 
-      run: cargo run -- ${{inputs.parallelism}} ${{inputs.begin_id}} ${{inputs.end_id}}
+      run: cargo run -- ${{inputs.parallelism}} ${{inputs.begin_id}} ${{inputs.end_id}} > nec.log
       continue-on-error: true
+    - uses: actions/upload-artifact@v4
+      with:
+        name: log
+        path:  nec.log
