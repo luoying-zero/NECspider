@@ -15,7 +15,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2
     - name: Init
       run: |
-      	set +e
+        set +e
         cargo fmt
         cargo check
         ls -a
