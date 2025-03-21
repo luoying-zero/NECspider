@@ -51,13 +51,13 @@ async fn main() {
                     .post("http://music.163.com/api/v6/playlist/detail")
                     .form(&params)
                     .send()
+                    .await?
+                    .bytes()
+                    .await?
             };
             let res = req
                 .retry(ConstantBuilder::default().with_delay(Duration::from_millis(0)))
-                .await?
-                .bytes()
-                .await
-                .unwrap();
+                .await?;
             drop(permit);
             //println!("{res:?}");
             match check_bytes_sequence(res, filed, author) {
