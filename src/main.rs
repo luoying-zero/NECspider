@@ -53,6 +53,7 @@ async fn main() {
                 .await
                 .unwrap();
             drop(permit);
+            println!("{res:#?}")
             match check_bytes_sequence(res, filed, author) {
                 true => Ok(Some(id)),
                 _ => Ok(None),
