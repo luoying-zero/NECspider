@@ -48,7 +48,7 @@ async fn main() {
             let req = move || {
                 client_clone
                     .post("http://music.163.com/api/v6/playlist/detail")
-                    .form(&params);
+                    .form(&params)
                     .send()
             };
             let res = req
