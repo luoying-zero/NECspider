@@ -80,7 +80,7 @@ pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> 
 }
 
 /// 辅助函数：在字节切片中查找子序列的位置。
-fn find_subsequence(haystack: Bytes, needle: Bytes) -> Option<usize> {
+fn find_subsequence(haystack: &Bytes, needle: &Bytes) -> Option<usize> {
     haystack
         .windows(needle.len())
         .position(|window| window == needle)
