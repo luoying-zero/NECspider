@@ -42,7 +42,7 @@ async fn main() {
                 .await
                 .unwrap();
             drop(permit);
-            if check_bytes_sequence(&res, filed, author) {
+            if check_bytes_sequence(&res, &filed, &author) {
             	return Ok(Some(id));
             }
             Ok(None)
