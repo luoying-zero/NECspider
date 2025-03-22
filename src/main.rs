@@ -22,7 +22,7 @@ async fn main() {
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
-    let mut join_set: JoinSet<Result<Option<u64>, reqwest::Error>> = JoinSet::new();
+    let mut join_set: JoinSet<Result<Option<u64>, String>> = JoinSet::new();
     let bar = ProgressBar::new(end - begin);
     bar.set_style(
         ProgressStyle::with_template("{bar:40} {pos:>7}/{len:7} | {elapsed}/{eta} | {per_sec}")
@@ -48,8 +48,8 @@ async fn main() {
             match res {
                 Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
                 Ok(Ok(None)) => (),
-                Ok(Err(e)) => eprintln!("Reqwest Error: {:#?}", e),
-                Err(err) => eprintln!("Join Error: {:#?}", err),
+                Ok(Err(e)) => eprintln!("{e}"),
+                Err(err) => eprintln!("Join Error: {err:#?}"),
             }
         }
         let filed = filed.clone();
@@ -72,9 +72,12 @@ async fn main() {
                     .await?;
                 Ok(bytes)
             };
-            let res = req
+            let res = match req
                 .retry(ConstantBuilder::default().with_delay(Duration::from_millis(0)))
-                .await?;
+                .await {
+                    Ok(bytes) => bytes,
+                    Err(e) => return Err(format!("Err in {id}:{e:#?}")),
+                }
             match check_bytes_sequence(res, filed, author) {
                 true => Ok(Some(id)),
                 _ => Ok(None),
@@ -89,8 +92,8 @@ async fn main() {
         match res {
             Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
             Ok(Ok(None)) => (),
-            Ok(Err(e)) => eprintln!("Reqwest Error: {:#?}", e),
-            Err(err) => eprintln!("Join Error: {:#?}", err),
+            Ok(Err(e)) => eprintln!("{e}"),
+            Err(err) => eprintln!("Join Error: {err:#?}"),
         }
     }
 }
