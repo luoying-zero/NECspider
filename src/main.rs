@@ -39,7 +39,7 @@ async fn main() {
 
     for id in begin..end {
         while join_set.len() >= max_concurrent {
-            res = join_set.join_next().await.unwrap();
+            let res = join_set.join_next().await.unwrap();
             match res {
                 Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
                 Ok(Ok(None)) => (),
