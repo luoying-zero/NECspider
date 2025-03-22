@@ -77,7 +77,7 @@ async fn main() {
                 .await
             {
                 Ok(bytes) => bytes,
-                Err(e) => return Err(format!("Err in {id}:{e:#?}")),
+                Err(e) => return Err(format!("Err pid {id}:{e:#?}")),
             };
             match check_bytes_sequence(res, filed, author) {
                 true => Ok(Some(id)),
