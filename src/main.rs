@@ -8,7 +8,6 @@ use reqwest;
 //use scraper;
 use std::collections::HashMap;
 use std::env::args;
-use std::sync::Arc;
 use std::time::Duration;
 // use std::future::Future;
 // use std::time::Duration;
@@ -24,7 +23,6 @@ async fn main() {
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
     let mut join_set: JoinSet<Result<Option<u64>, reqwest::Error>> = JoinSet::new();
-    let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
     let bar = ProgressBar::new(end - begin);
     bar.set_style(
         ProgressStyle::with_template("{bar:40} {pos:>7}/{len:7} | {elapsed}/{eta} | {per_sec}")
@@ -40,13 +38,18 @@ async fn main() {
         .unwrap();
 
     for id in begin..end {
-        // while join_set.len() >= max_concurrent {
-        // join_set.join_next().await.unwrap().unwrap();
-        // }
+        while join_set.len() >= max_concurrent {
+            res = join_set.join_next().await.unwrap();
+            match res {
+                Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
+                Ok(Ok(None)) => (),
+                Ok(Err(e)) => eprintln!("Reqwest Error: {:#?}", e),
+                Err(err) => eprintln!("Join Error: {:#?}", err),
+            }
+        }
         let filed = filed.clone();
         let author = author.clone();
         let client_clone = client.clone();
-        let permit = semaphore.clone().acquire_owned().await.unwrap();
         // if (id - begin) % ((end - begin) / 100) == 0 {
         // bar.inc((end - begin) / 100);
         // }
@@ -67,8 +70,6 @@ async fn main() {
             let res = req
                 .retry(ConstantBuilder::default().with_delay(Duration::from_millis(0)))
                 .await?;
-            drop(permit);
-            //println!("{res:?}");
             match check_bytes_sequence(res, filed, author) {
                 true => Ok(Some(id)),
                 _ => Ok(None),
@@ -84,8 +85,8 @@ async fn main() {
         match res {
             Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
             Ok(Ok(None)) => (),
-            Ok(Err(e)) => eprintln!("Reqwest错误: {:?}", e),
-            Err(err) => eprintln!("Join错误: {:?}", err),
+            Ok(Err(e)) => eprintln!("Reqwest Error: {:#?}", e),
+            Err(err) => eprintln!("Join Error: {:#?}", err),
         }
     }
 
