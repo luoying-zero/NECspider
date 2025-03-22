@@ -70,14 +70,15 @@ async fn main() {
                     .await?
                     .bytes()
                     .await?;
-                Ok(bytes)
+                Ok::<bytes::Bytes, reqwest::Error>(bytes)
             };
             let res = match req
                 .retry(ConstantBuilder::default().with_delay(Duration::from_millis(0)))
-                .await {
-                    Ok(bytes) => bytes,
-                    Err(e) => return Err(format!("Err in {id}:{e:#?}")),
-                };
+                .await
+            {
+                Ok(bytes) => bytes,
+                Err(e) => return Err(format!("Err in {id}:{e:#?}")),
+            };
             match check_bytes_sequence(res, filed, author) {
                 true => Ok(Some(id)),
                 _ => Ok(None),
