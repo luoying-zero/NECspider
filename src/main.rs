@@ -31,7 +31,7 @@ async fn main() {
     bar.set_draw_target(ProgressDrawTarget::stdout_with_hz(1));
 
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(20))
+        .timeout(Duration::from_secs(50))
         .pool_idle_timeout(None)
         .pool_max_idle_per_host(usize::MAX)
         .build()
