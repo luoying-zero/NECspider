@@ -28,7 +28,7 @@ async fn main() {
         ProgressStyle::with_template("{bar:40} {pos:>7}/{len:7} | {elapsed}/{eta} | {per_sec}")
             .unwrap(),
     );
-    bar.set_draw_target(ProgressDrawTarget::stdout_with_hz(1));
+    bar.set_draw_target(ProgressDrawTarget::stderr_with_hz(1));
 
     let client = reqwest::Client::builder()
         .http1_only()
@@ -83,7 +83,6 @@ async fn main() {
     }
 
     bar.finish();
-    println!("DONE SPAWNING");
 
     //let mut output = Vec::new();
     while let Some(res) = join_set.join_next().await {
@@ -94,8 +93,6 @@ async fn main() {
             Err(err) => eprintln!("Join Error: {:#?}", err),
         }
     }
-
-    println!("ALL DONE");
 }
 
 pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
