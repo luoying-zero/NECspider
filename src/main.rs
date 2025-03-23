@@ -8,8 +8,8 @@ use reqwest;
 //use scraper;
 use std::collections::HashMap;
 use std::env::args;
-use std::time::Duration;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio;
 
 #[tokio::main]
@@ -20,6 +20,7 @@ async fn main() {
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
+    let mut join_set = tokio::task::JoinSet::new();
     let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
     let (tx, mut rx) = tokio::sync::mpsc::channel(100);
     let bar = ProgressBar::new(end - begin);
@@ -60,7 +61,7 @@ async fn main() {
         // bar.inc((end - begin) / 100);
         // }
         bar.inc(1);
-        tokio::spawn(async move {
+        join_set.spawn(async move {
             let mut params = HashMap::new();
             params.insert("id", format!("{id}"));
             let req = || async {
@@ -74,9 +75,10 @@ async fn main() {
                 Ok::<bytes::Bytes, reqwest::Error>(bytes)
             };
             let res = match req
-                .retry(ConstantBuilder::default()
-                    .with_delay(Duration::from_millis(0))
-                    .with_max_times(10)
+                .retry(
+                    ConstantBuilder::default()
+                        .with_delay(Duration::from_millis(0))
+                        .with_max_times(5),
                 )
                 .await
             {
@@ -84,7 +86,7 @@ async fn main() {
                 Err(e) => {
                     tx.send(Err(format!("Err pid {id} {e:#?}")));
                     return;
-                },
+                }
             };
             drop(permit);
             match check_bytes_sequence(res, filed, author) {
@@ -96,18 +98,10 @@ async fn main() {
         });
     }
 
+    join_set.join_all().await;
     drop(tx);
     eprintln!("{:#?}, {}", bar.duration(), bar.per_sec());
     bar.finish();
-
-    // while let Some(res) = join_set.join_next().await {
-        // match res {
-            // Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
-            // Ok(Ok(None)) => (),
-            // Ok(Err(e)) => eprintln!("{e}"),
-            // Err(err) => eprintln!("Join Error: {err:#?}"),
-        // }
-    // }
 }
 
 pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
