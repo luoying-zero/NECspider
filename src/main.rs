@@ -9,10 +9,8 @@ use reqwest;
 use std::collections::HashMap;
 use std::env::args;
 use std::time::Duration;
-// use std::future::Future;
-// use std::time::Duration;
+use std::sync::Arc;
 use tokio;
-use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
@@ -22,7 +20,8 @@ async fn main() {
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
-    let mut join_set: JoinSet<Result<Option<u64>, String>> = JoinSet::new();
+    let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
+    let (tx, mut rx) = tokio::sync::mpsc::channel(100);
     let bar = ProgressBar::new(end - begin);
     bar.set_style(
         ProgressStyle::with_template("{bar:40} {pos:>7}/{len:7} | {elapsed}/{eta} | {per_sec}")
@@ -42,24 +41,26 @@ async fn main() {
         .build()
         .unwrap();
 
-    for id in begin..end {
-        while join_set.len() >= max_concurrent {
-            let res = join_set.join_next().await.unwrap();
+    tokio::spawn(async move {
+        while let Some(res) = rx.recv().await {
             match res {
-                Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
-                Ok(Ok(None)) => (),
-                Ok(Err(e)) => eprintln!("{e}"),
-                Err(err) => eprintln!("Join Error: {err:#?}"),
+                Ok(id) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
+                Err(e) => eprintln!("{e}"),
             }
         }
+    });
+
+    for id in begin..end {
         let filed = filed.clone();
         let author = author.clone();
         let client_clone = client.clone();
+        let permit = semaphore.clone().acquire_owned().await.unwrap();
+        let tx = tx.clone();
         // if (id - begin) % ((end - begin) / 100) == 0 {
         // bar.inc((end - begin) / 100);
         // }
         bar.inc(1);
-        join_set.spawn(async move {
+        tokio::spawn(async move {
             let mut params = HashMap::new();
             params.insert("id", format!("{id}"));
             let req = || async {
@@ -80,27 +81,33 @@ async fn main() {
                 .await
             {
                 Ok(bytes) => bytes,
-                Err(e) => return Err(format!("Err pid {id} {e:#?}")),
+                Err(e) => {
+                    tx.send(Err(format!("Err pid {id} {e:#?}")));
+                    return;
+                },
             };
+            drop(permit);
             match check_bytes_sequence(res, filed, author) {
-                true => Ok(Some(id)),
-                _ => Ok(None),
+                true => {
+                    tx.send(Ok(id));
+                }
+                false => (),
             }
         });
     }
 
+    drop(tx);
     eprintln!("{:#?}, {}", bar.duration(), bar.per_sec());
     bar.finish();
 
-    //let mut output = Vec::new();
-    while let Some(res) = join_set.join_next().await {
-        match res {
-            Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
-            Ok(Ok(None)) => (),
-            Ok(Err(e)) => eprintln!("{e}"),
-            Err(err) => eprintln!("Join Error: {err:#?}"),
-        }
-    }
+    // while let Some(res) = join_set.join_next().await {
+        // match res {
+            // Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
+            // Ok(Ok(None)) => (),
+            // Ok(Err(e)) => eprintln!("{e}"),
+            // Err(err) => eprintln!("Join Error: {err:#?}"),
+        // }
+    // }
 }
 
 pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
