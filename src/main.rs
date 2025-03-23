@@ -20,7 +20,6 @@ async fn main() {
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
-    let mut join_set = tokio::task::JoinSet::new();
     let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
     let (tx, mut rx) = tokio::sync::mpsc::channel(100);
     let bar = ProgressBar::new(end - begin);
@@ -61,7 +60,7 @@ async fn main() {
         // bar.inc((end - begin) / 100);
         // }
         bar.inc(1);
-        join_set.spawn(async move {
+        tokio::spawn(async move {
             let mut params = HashMap::new();
             params.insert("id", format!("{id}"));
             let req = || async {
@@ -98,7 +97,6 @@ async fn main() {
         });
     }
 
-    join_set.join_all().await;
     drop(tx);
     eprintln!("{:#?}, {}", bar.duration(), bar.per_sec());
     bar.finish();

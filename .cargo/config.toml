@@ -3,6 +3,6 @@
 [profile.release]
 opt-level = 3
 lto = true
-strip = true
+strip = false
 panic = "abort"
 codegen-units = 1

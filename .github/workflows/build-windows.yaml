@@ -13,7 +13,7 @@ jobs:
       - name: Build binary file
         run: |
           cargo build --release
-          ls -a
+          ls -R -Force
         continue-on-error: true
       - name: Upload artifact
         uses: actions/upload-artifact@v4
