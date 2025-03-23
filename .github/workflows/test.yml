@@ -1,4 +1,4 @@
-name: Run-ELF
+name: Test
 
 on:
   workflow_dispatch:
@@ -21,16 +21,16 @@ env:
 
 jobs:
   run:
+
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v4
     - uses: Swatinem/rust-cache@v2
-    - name: Run 
-      run: |
-        chmod 777 NECspider
-        ./NECspider ${{inputs.parallelism}} ${{inputs.begin_id}} ${{inputs.end_id}}
+    - name: Test
+      run: cargo run --release -- ${{inputs.parallelism}} ${{inputs.begin_id}} ${{inputs.end_id}}
       continue-on-error: true
     - uses: actions/upload-artifact@v4
       with:
-        name: log
-        path:  nec.log
+        name: pid_list
+        path: pid.txt
