@@ -1,7 +1,7 @@
 [env]
 
 [profile.release]
-opt-level = "s"
+opt-level = 3
 lto = true
 strip = true
 panic = "abort"
