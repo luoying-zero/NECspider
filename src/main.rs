@@ -84,14 +84,14 @@ async fn main() {
             {
                 Ok(bytes) => bytes,
                 Err(e) => {
-                    tx.send(Err(format!("Err pid {id} {e:#?}")));
+                    tx.send(Err(format!("Err pid {id} {e:#?}"))).await;
                     return;
                 }
             };
             drop(permit);
             match check_bytes_sequence(res, filed, author) {
                 true => {
-                    tx.send(Ok(id));
+                    tx.send(Ok(id)).await;
                 }
                 false => (),
             }
