@@ -88,13 +88,9 @@ async fn main() {
             };
             drop(permit);
             match check_bytes_sequence(res, filed, author) {
-<<<<<<< HEAD
                 true => {
                     tx.send(Ok(id));
                 }
-=======
-                true => tx.send(Ok(id)),
->>>>>>> main
                 false => (),
             }
         });
