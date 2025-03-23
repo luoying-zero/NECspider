@@ -86,6 +86,7 @@ async fn main() {
         });
     }
 
+    eprintln!("{}, {}", bat.duration(), bar.per_sec());
     bar.finish();
 
     //let mut output = Vec::new();

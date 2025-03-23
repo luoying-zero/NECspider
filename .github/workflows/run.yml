@@ -28,9 +28,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: Swatinem/rust-cache@v2
     - name: Run 
-      run: cargo run --release -- ${{inputs.parallelism}} ${{inputs.begin_id}} ${{inputs.end_id}}
+      run: cargo run --release -- ${{inputs.parallelism}} ${{inputs.begin_id}} ${{inputs.end_id}} > pid.list
       continue-on-error: true
     - uses: actions/upload-artifact@v4
       with:
-        name: log
-        path:  nec.log
+        name: list
+        path:  pid.list
