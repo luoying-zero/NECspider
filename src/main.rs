@@ -33,7 +33,7 @@ async fn main() {
     let client = reqwest::Client::builder()
         .http1_only()
         .timeout(Duration::from_secs(50))
-        .pool_idle_timeout(72)
+        .pool_idle_timeout(Duration::from_secs(72))
         .pool_max_idle_per_host(usize::MAX)
         .gzip(true)
         .brotli(true)
