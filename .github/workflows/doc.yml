@@ -1,4 +1,4 @@
-name: Init
+name: Doc
 
 on:
   workflow_dispatch:
@@ -13,13 +13,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: Swatinem/rust-cache@v2
-    - name: Init
+    - name: Doc
       run: |
         set +e
         cargo doc -p indicatif
         ls -a
     - uses: actions/upload-artifact@v4
       with:
-        name: spider
+        name: Doc
         path: |
           target/doc/
