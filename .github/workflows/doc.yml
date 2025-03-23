@@ -16,7 +16,7 @@ jobs:
     - name: Doc
       run: |
         set +e
-        cargo doc -p indicatif
+        cargo doc --no-deps -p indicatif
         ls -a
     - uses: actions/upload-artifact@v4
       with:
