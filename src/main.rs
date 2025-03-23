@@ -73,11 +73,14 @@ async fn main() {
                 Ok::<bytes::Bytes, reqwest::Error>(bytes)
             };
             let res = match req
-                .retry(ConstantBuilder::default().with_delay(Duration::from_millis(0)))
+                .retry(ConstantBuilder::default()
+                    .with_delay(Duration::from_millis(0))
+                    .with_max_times(10)
+                )
                 .await
             {
                 Ok(bytes) => bytes,
-                Err(e) => return Err(format!("Err pid {id}:{e:#?}")),
+                Err(e) => return Err(format!("Err pid {id} {e:#?}")),
             };
             match check_bytes_sequence(res, filed, author) {
                 true => Ok(Some(id)),
