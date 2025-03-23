@@ -88,7 +88,7 @@ async fn main() {
                 }
             };
             drop(permit);
-            match check_bytes_sequence(res, filed, author) {
+            match check_bytes_sequence(res, filed, author).await {
                 true => {
                     tx.send(Ok(id)).await;
                 }
@@ -102,10 +102,8 @@ async fn main() {
     bar.finish();
 }
 
-pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
-    // 查找第一个子序列的位置
+pub async fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
     if let Some(pos) = find_subsequence(&haystack, &needle1) {
-        // 检查剩余部分是否以第二个子序列开头
         let remaining = &haystack[pos + needle1.len()..];
         remaining.starts_with(&needle2)
     } else {
@@ -113,7 +111,6 @@ pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> 
     }
 }
 
-/// 辅助函数：在字节切片中查找子序列的位置。
 fn find_subsequence(haystack: &Bytes, needle: &Bytes) -> Option<usize> {
     haystack
         .windows(needle.len())
