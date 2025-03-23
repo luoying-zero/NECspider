@@ -1,0 +1,25 @@
+name: Init
+
+on:
+  workflow_dispatch:
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  Init:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: Swatinem/rust-cache@v2
+    - name: Init
+      run: |
+        set +e
+        cargo doc -p indicatif
+        ls -a
+    - uses: actions/upload-artifact@v4
+      with:
+        name: spider
+        path: |
+          target/doc/
