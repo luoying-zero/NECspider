@@ -17,7 +17,7 @@ jobs:
       run: |
         set +e
         cargo fmt
-        cargo check
+        cargo check --bin test
         ls -a
     - uses: actions/upload-artifact@v4
       with:

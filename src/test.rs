@@ -11,8 +11,9 @@ use std::env::args;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio;
+use tokio::task::JoinSet;
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main]
 async fn main() {
     let filed = Bytes::from_static(b"\"userId\":");
     let author = Bytes::from_static(b"62696289,");
@@ -20,8 +21,9 @@ async fn main() {
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
+    let mut join_set: JoinSet<Result<Option<u64>, String>> = JoinSet::new();
     let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
-    let (tx, mut rx) = tokio::sync::mpsc::channel(100);
+    let (tx, mut rx) = tokio::sync::oneshot::channel();
     let bar = ProgressBar::new(end - begin);
     bar.set_style(
         ProgressStyle::with_template("{bar:40} {pos:>7}/{len:7} | {elapsed}/{eta} | {per_sec}")
@@ -31,7 +33,7 @@ async fn main() {
 
     let client = reqwest::Client::builder()
         .http1_only()
-        .timeout(Duration::from_secs(50))
+        .timeout(Duration::from_secs(20))
         .pool_idle_timeout(Duration::from_secs(72))
         .pool_max_idle_per_host(usize::MAX)
         .gzip(true)
@@ -42,10 +44,17 @@ async fn main() {
         .unwrap();
 
     tokio::spawn(async move {
-        while let Some(res) = rx.recv().await {
-            match res {
-                Ok(id) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
-                Err(e) => eprintln!("{e}"),
+        loop {
+            while let Some(res) = join_set.join_next().await {
+                match res {
+                    Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
+                    Ok(Ok(None)) => (),
+                    Ok(Err(e)) => eprintln!("{e}"),
+                    Err(err) => eprintln!("Join Error: {err:#?}"),
+                }
+            }
+            if let Ok(_) = rx.try_recv() {
+                break;
             }
         }
     });
@@ -55,12 +64,11 @@ async fn main() {
         let author = author.clone();
         let client_clone = client.clone();
         let permit = semaphore.clone().acquire_owned().await.unwrap();
-        let tx = tx.clone();
         // if (id - begin) % ((end - begin) / 100) == 0 {
         // bar.inc((end - begin) / 100);
         // }
         bar.inc(1);
-        tokio::spawn(async move {
+        join_set::spawn(async move {
             let mut params = HashMap::new();
             params.insert("id", format!("{id}"));
             let req = || async {
@@ -82,22 +90,17 @@ async fn main() {
                 .await
             {
                 Ok(bytes) => bytes,
-                Err(e) => {
-                    tx.send(Err(format!("Err pid {id} {e:#?}"))).await;
-                    return;
-                }
+                Err(e) => return Err(format!("Err pid {id} {e:#?}"))
             };
             drop(permit);
             match check_bytes_sequence(res, filed, author).await {
-                true => {
-                    tx.send(Ok(id)).await;
-                }
-                false => (),
+                true => Ok(Some(id)),
+                false => Ok(None),
             }
         });
     }
 
-    drop(tx);
+    tx.send(());
     eprintln!("{:#?}, {}", bar.duration(), bar.per_sec());
     bar.finish();
 }
