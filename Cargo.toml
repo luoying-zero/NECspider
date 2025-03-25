@@ -2,10 +2,10 @@
 name = "NECspider"
 version = "0.1.0"
 edition = "2024"
-default-run = "main"
+default-run = "NECspider"
 
 [[bin]]
-name = "main"
+name = "NECspider"
 path = "src/main.rs"
 
 [[bin]]
