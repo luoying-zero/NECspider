@@ -91,7 +91,7 @@ async fn main() {
                 }
             };
             drop(permit);
-            match check_bytes_sequence(res, filed, author).await {
+            match check_bytes_sequence(res, filed, author) {
                 true => {
                     tx.send(Ok(id)).await;
                 }
@@ -105,7 +105,7 @@ async fn main() {
     bar.finish();
 }
 
-pub async fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
+pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
     if let Some(pos) = find_subsequence(&haystack, &needle1) {
         let remaining = &haystack[pos + needle1.len()..];
         remaining.starts_with(&needle2)
