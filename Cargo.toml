@@ -5,6 +5,10 @@ edition = "2024"
 default-run = "main"
 
 [[bin]]
+name = "main"
+path = "src/main.rs"
+
+[[bin]]
 name = "test"
 path = "src/test.rs"
 
