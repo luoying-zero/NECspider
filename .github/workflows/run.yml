@@ -30,6 +30,6 @@ jobs:
     - name: Run 
       run: |
         sudo sysctl -w net.ipv4.ip_local_port_range="1024 65535"
-        cargo run --release -- ${{inputs.parallelism}} ${{inputs.begin_id}} ${{inputs.end_id}} > pid.txt
+        cargo run --release -- ${{inputs.parallelism}} ${{inputs.begin_id}} ${{inputs.end_id}}
       continue-on-error: true
     - run: cat pid.txt
