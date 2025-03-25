@@ -90,7 +90,7 @@ async fn main() {
                 .await
             {
                 Ok(bytes) => bytes,
-                Err(e) => return Err(format!("Err pid {id} {e:#?}"))
+                Err(e) => return Err(format!("Err pid {id} {e:#?}")),
             };
             drop(permit);
             match check_bytes_sequence(res, filed, author).await {

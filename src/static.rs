@@ -73,9 +73,10 @@ async fn main() {
                 Ok::<bytes::Bytes, reqwest::Error>(bytes)
             };
             let res = match req
-                .retry(ConstantBuilder::default()
-                    .with_delay(Duration::from_millis(0))
-                    .with_max_times(10)
+                .retry(
+                    ConstantBuilder::default()
+                        .with_delay(Duration::from_millis(0))
+                        .with_max_times(10),
                 )
                 .await
             {

@@ -50,6 +50,9 @@ async fn main() {
         }
     });
 
+    println!("begin: \"https://music.lliiiill.com/playlist/{begin}\",");
+    println!("end: \"https://music.lliiiill.com/playlist/{end}\",");
+
     for id in begin..end {
         let filed = filed.clone();
         let author = author.clone();
