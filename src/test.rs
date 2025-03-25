@@ -68,7 +68,7 @@ async fn main() {
         // bar.inc((end - begin) / 100);
         // }
         bar.inc(1);
-        join_set::spawn(async move {
+        join_set.spawn(async move {
             let mut params = HashMap::new();
             params.insert("id", format!("{id}"));
             let req = || async {
