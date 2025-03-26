@@ -72,7 +72,6 @@ async fn main() {
                     .form(&params)
                     .send()
                     .await?
-                    .error_for_status()?
                     .bytes()
                     .await?;
                 Ok::<bytes::Bytes, reqwest::Error>(bytes)
@@ -92,6 +91,7 @@ async fn main() {
                 }
             };
             drop(permit);
+            println!("{res:X}");
             match check_bytes_sequence(res, filed, author) {
                 true => {
                     tx.send(Ok(id)).await;
