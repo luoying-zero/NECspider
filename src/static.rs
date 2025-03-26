@@ -9,8 +9,6 @@ use reqwest;
 use std::collections::HashMap;
 use std::env::args;
 use std::time::Duration;
-// use std::future::Future;
-// use std::time::Duration;
 use tokio;
 use tokio::task::JoinSet;
 
@@ -32,7 +30,7 @@ async fn main() {
 
     let client = reqwest::Client::builder()
         .http1_only()
-        .timeout(Duration::from_secs(50))
+        .timeout(Duration::from_secs(20))
         .pool_idle_timeout(Duration::from_secs(72))
         .pool_max_idle_per_host(usize::MAX)
         .gzip(true)
@@ -41,6 +39,9 @@ async fn main() {
         .deflate(true)
         .build()
         .unwrap();
+
+    println!("begin: \"https://music.lliiiill.com/playlist/{begin}\",");
+    println!("end: \"https://music.lliiiill.com/playlist/{end}\",");
 
     for id in begin..end {
         while join_set.len() >= max_concurrent {
@@ -76,7 +77,7 @@ async fn main() {
                 .retry(
                     ConstantBuilder::default()
                         .with_delay(Duration::from_millis(0))
-                        .with_max_times(10),
+                        .with_max_times(5),
                 )
                 .await
             {
@@ -93,7 +94,6 @@ async fn main() {
     eprintln!("{:#?}, {}", bar.duration(), bar.per_sec());
     bar.finish();
 
-    //let mut output = Vec::new();
     while let Some(res) = join_set.join_next().await {
         match res {
             Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
@@ -105,9 +105,7 @@ async fn main() {
 }
 
 pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
-    // 查找第一个子序列的位置
     if let Some(pos) = find_subsequence(&haystack, &needle1) {
-        // 检查剩余部分是否以第二个子序列开头
         let remaining = &haystack[pos + needle1.len()..];
         remaining.starts_with(&needle2)
     } else {
@@ -115,17 +113,8 @@ pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> 
     }
 }
 
-/// 辅助函数：在字节切片中查找子序列的位置。
 fn find_subsequence(haystack: &Bytes, needle: &Bytes) -> Option<usize> {
     haystack
         .windows(needle.len())
         .position(|window| window == needle)
 }
-
-// let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
-// let html = scraper::Html::parse_document(&res);
-// if let Some(name) = html.select(&select).next() {
-// if name.value().name() == "PurionPurion" {
-// println!("{:?}", id);
-// }
-// }

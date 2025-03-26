@@ -11,6 +11,7 @@ use std::env::args;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio;
+use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
@@ -20,8 +21,8 @@ async fn main() {
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
+    let mut join_set: JoinSet<Result<Option<u64>, String>> = JoinSet::new();
     let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
-    let (tx, mut rx) = tokio::sync::mpsc::channel(100);
     let bar = ProgressBar::new(end - begin);
     bar.set_style(
         ProgressStyle::with_template("{bar:40} {pos:>7}/{len:7} | {elapsed}/{eta} | {per_sec}")
@@ -41,15 +42,6 @@ async fn main() {
         .build()
         .unwrap();
 
-    tokio::spawn(async move {
-        while let Some(res) = rx.recv().await {
-            match res {
-                Ok(id) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
-                Err(e) => eprintln!("{e}"),
-            }
-        }
-    });
-
     println!("begin: \"https://music.lliiiill.com/playlist/{begin}\",");
     println!("end: \"https://music.lliiiill.com/playlist/{end}\",");
 
@@ -57,13 +49,25 @@ async fn main() {
         let filed = filed.clone();
         let author = author.clone();
         let client_clone = client.clone();
-        let permit = semaphore.clone().acquire_owned().await.unwrap();
-        let tx = tx.clone();
+        let semaphore =semaphore.clone();
+        let permit = loop {
+            if let Ok(permit) = semaphore.try_acquire_owned() {
+                break permit;
+            }
+            if let Ok(res) = join_set.try_join_next() {
+                match res {
+                    Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
+                    Ok(Ok(None)) => (),
+                    Ok(Err(e)) => eprintln!("{e}"),
+                    Err(err) => eprintln!("Join Error: {err:#?}"),
+                }
+            }
+        }
         // if (id - begin) % ((end - begin) / 100) == 0 {
         // bar.inc((end - begin) / 100);
         // }
         bar.inc(1);
-        tokio::spawn(async move {
+        join_set.spawn(async move {
             let mut params = HashMap::new();
             params.insert("id", format!("{id}"));
             let req = || async {
@@ -85,25 +89,26 @@ async fn main() {
                 .await
             {
                 Ok(bytes) => bytes,
-                Err(e) => {
-                    tx.send(Err(format!("Err pid {id} {e:#?}"))).await;
-                    return;
-                }
+                Err(e) => return Err(format!("Err pid {id} {e:#?}")),
             };
-            drop(permit);
-            println!("body:{res:X}");
             match check_bytes_sequence(res, filed, author) {
-                true => {
-                    tx.send(Ok(id)).await;
-                }
-                false => (),
+                true => Ok(Some(id)),
+                _ => Ok(None),
             }
         });
     }
 
-    drop(tx);
     eprintln!("{:#?}, {}", bar.duration(), bar.per_sec());
     bar.finish();
+
+    while let Some(res) = join_set.join_next().await {
+        match res {
+            Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
+            Ok(Ok(None)) => (),
+            Ok(Err(e)) => eprintln!("{e}"),
+            Err(err) => eprintln!("Join Error: {err:#?}"),
+        }
+    }
 }
 
 pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
@@ -120,11 +125,3 @@ fn find_subsequence(haystack: &Bytes, needle: &Bytes) -> Option<usize> {
         .windows(needle.len())
         .position(|window| window == needle)
 }
-
-// let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
-// let html = scraper::Html::parse_document(&res);
-// if let Some(name) = html.select(&select).next() {
-// if name.value().name() == "PurionPurion" {
-// println!("{:?}", id);
-// }
-// }
