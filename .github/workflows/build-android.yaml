@@ -20,6 +20,7 @@ jobs:
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: |
           set +e
+          sudo apt-get install pkg-config libssl-dev
           cargo install cargo-ndk
           rustup target add aarch64-linux-android
           cargo ndk -t arm64-v8a -o ./jniLibs build --release
