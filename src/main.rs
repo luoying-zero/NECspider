@@ -91,7 +91,7 @@ async fn main() {
                 }
             };
             drop(permit);
-            println!("{res:X}");
+            println!("body:{res:X}");
             match check_bytes_sequence(res, filed, author) {
                 true => {
                     tx.send(Ok(id)).await;
