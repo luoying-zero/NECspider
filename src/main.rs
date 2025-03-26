@@ -90,6 +90,7 @@ async fn main() {
                 Ok(bytes) => bytes,
                 Err(e) => return Err(format!("Err pid {id} {e:#?}")),
             };
+            drop(permit);
             match check_bytes_sequence(res, filed, author) {
                 true => Ok(Some(id)),
                 _ => Ok(None),
