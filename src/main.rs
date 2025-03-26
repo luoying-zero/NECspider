@@ -54,7 +54,7 @@ async fn main() {
             if let Ok(permit) = semaphore.try_acquire_owned() {
                 break permit;
             }
-            if let Ok(res) = join_set.try_join_next() {
+            if let Some(res) = join_set.try_join_next() {
                 match res {
                     Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
                     Ok(Ok(None)) => (),
@@ -62,7 +62,7 @@ async fn main() {
                     Err(err) => eprintln!("Join Error: {err:#?}"),
                 }
             }
-        }
+        };
         // if (id - begin) % ((end - begin) / 100) == 0 {
         // bar.inc((end - begin) / 100);
         // }
