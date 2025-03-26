@@ -67,6 +67,7 @@ async fn main() {
                     .form(&params)
                     .send()
                     .await?
+                    .error_for_status()?
                     .text()
                     .await?;
                 Ok::<String, reqwest::Error>(bytes)
@@ -81,7 +82,7 @@ async fn main() {
                 )
                 .await
             {
-                Ok(bytes) => bytes,
+                Ok(text) => text,
                 Err(e) => format!("Err pid {id} {e:#?}"),
             }
         });
