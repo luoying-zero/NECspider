@@ -21,7 +21,7 @@ name = "static"
 path = "src/static.rs"
 
 [dependencies]
-backon = "1.4.0"
+backon = { versuon = "1.4.1", features = ["tokio-sleep"] }
 bytes = "1"
 indicatif = "0.17.11"
 openssl = { version = "0.10.71", features = ["vendored"] }
