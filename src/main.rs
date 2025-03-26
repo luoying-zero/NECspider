@@ -50,8 +50,8 @@ async fn main() {
         let author = author.clone();
         let client_clone = client.clone();
         let permit = loop {
-            if let Ok(permit) = semaphore.clone().try_acquire_owned() {
-                break permit;
+            if semaphore.available_permits() > 0 {
+                break semaphore.clone().acquire_owned().await.unwrap();
             }
             if let Some(res) = join_set.try_join_next() {
                 match res {
