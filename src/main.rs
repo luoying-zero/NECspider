@@ -72,6 +72,7 @@ async fn main() {
                     .form(&params)
                     .send()
                     .await?
+                    .error_for_status()?
                     .bytes()
                     .await?;
                 Ok::<bytes::Bytes, reqwest::Error>(bytes)
