@@ -22,9 +22,11 @@ jobs:
           set +e
           cargo install cargo-ndk
           rustup target add aarch64-linux-android
-          cargo ndk -t arm64-v8a build --release
+          cargo ndk -t arm64-v8a build --release --bin NECspider --bin test
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: android_arm64
-          path: target/aarch64-linux-android/release/NECspider
+          path: |
+            target/aarch64-linux-android/release/NECspider
+            target/aarch64-linux-android/release/test

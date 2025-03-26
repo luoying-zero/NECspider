@@ -8,9 +8,9 @@ use reqwest;
 //use scraper;
 use std::collections::HashMap;
 use std::env::args;
+use std::sync::Arc;
 use std::time::Duration;
 use tokio;
-use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
@@ -20,7 +20,8 @@ async fn main() {
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
     let end = arguments.next().unwrap().parse::<u64>().unwrap();
-    let mut join_set: JoinSet<String> = JoinSet::new();
+    let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
+    let (tx, mut rx) = tokio::sync::mpsc::channel(100);
     let bar = ProgressBar::new(end - begin);
     bar.set_style(
         ProgressStyle::with_template("{bar:40} {pos:>7}/{len:7} | {elapsed}/{eta} | {per_sec}")
@@ -40,25 +41,29 @@ async fn main() {
         .build()
         .unwrap();
 
+    tokio::spawn(async move {
+        while let Some(res) = rx.recv().await {
+            match res {
+                Ok(id) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
+                Err(e) => eprintln!("{e}"),
+            }
+        }
+    });
+
     println!("begin: \"https://music.lliiiill.com/playlist/{begin}\",");
     println!("end: \"https://music.lliiiill.com/playlist/{end}\",");
 
     for id in begin..end {
-        while join_set.len() >= max_concurrent {
-            let res = join_set.join_next().await.unwrap();
-            match res {
-                Ok(s) => println!("{s}"),
-                Err(err) => eprintln!("Join Error: {err:#?}"),
-            }
-        }
         let filed = filed.clone();
         let author = author.clone();
         let client_clone = client.clone();
+        let permit = semaphore.clone().acquire_owned().await.unwrap();
+        let tx = tx.clone();
         // if (id - begin) % ((end - begin) / 100) == 0 {
         // bar.inc((end - begin) / 100);
         // }
         bar.inc(1);
-        join_set.spawn(async move {
+        tokio::spawn(async move {
             let mut params = HashMap::new();
             params.insert("id", format!("{id}"));
             let req = || async {
@@ -67,11 +72,11 @@ async fn main() {
                     .form(&params)
                     .send()
                     .await?
-                    .text()
+                    .bytes()
                     .await?;
-                Ok::<String, reqwest::Error>(bytes)
+                Ok::<bytes::Bytes, reqwest::Error>(bytes)
             };
-            match req
+            let res = match req
                 .retry(
                     ConstantBuilder::default()
                         .with_delay(Duration::from_millis(0))
@@ -80,20 +85,25 @@ async fn main() {
                 .await
             {
                 Ok(bytes) => bytes,
-                Err(e) => format!("Err pid {id} {e:#?}"),
+                Err(e) => {
+                    tx.send(Err(format!("Err pid {id} {e:#?}"))).await;
+                    return;
+                }
+            };
+            drop(permit);
+            println!("body:{res:X}");
+            match check_bytes_sequence(res, filed, author) {
+                true => {
+                    tx.send(Ok(id)).await;
+                }
+                false => (),
             }
         });
     }
 
+    drop(tx);
     eprintln!("{:#?}, {}", bar.duration(), bar.per_sec());
     bar.finish();
-
-    while let Some(res) = join_set.join_next().await {
-        match res {
-            Ok(s) => println!("{s}"),
-            Err(err) => eprintln!("Join Error: {err:#?}"),
-        }
-    }
 }
 
 pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
@@ -110,3 +120,11 @@ fn find_subsequence(haystack: &Bytes, needle: &Bytes) -> Option<usize> {
         .windows(needle.len())
         .position(|window| window == needle)
 }
+
+// let select = scraper::Selector::parse("div.user > span.name > a").unwrap();
+// let html = scraper::Html::parse_document(&res);
+// if let Some(name) = html.select(&select).next() {
+// if name.value().name() == "PurionPurion" {
+// println!("{:?}", id);
+// }
+// }

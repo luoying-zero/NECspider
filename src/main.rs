@@ -1,4 +1,4 @@
-use backon::ConstantBuilder;
+use backon::ExponentialBuilder;
 use backon::Retryable;
 use bytes::Bytes;
 use indicatif::ProgressBar;
@@ -75,14 +75,17 @@ async fn main() {
                     .form(&params)
                     .send()
                     .await?
+                    .error_for_status()?
                     .bytes()
                     .await?;
                 Ok::<bytes::Bytes, reqwest::Error>(bytes)
             };
             let res = match req
                 .retry(
-                    ConstantBuilder::default()
-                        .with_delay(Duration::from_millis(0))
+                    ExponentialBuilder::default()
+                        .with_jitter()
+                        .with_factor(3)
+                        .with_min_delay(Duration::from_secs(10))
                         .with_max_times(5),
                 )
                 .await
