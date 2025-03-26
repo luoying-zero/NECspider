@@ -84,7 +84,7 @@ async fn main() {
                 .retry(
                     ExponentialBuilder::default()
                         .with_jitter()
-                        .with_factor(3)
+                        .with_factor(3.0)
                         .with_min_delay(Duration::from_secs(10))
                         .with_max_times(5),
                 )
