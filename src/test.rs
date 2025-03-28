@@ -98,15 +98,15 @@ async fn main() {
         });
     }
 
-    eprintln!("{:#?}, {}", bar.duration(), bar.per_sec());
-    bar.finish();
-
     while let Some(res) = join_set.join_next().await {
         match res {
             Ok(s) => println!("{s}"),
             Err(err) => eprintln!("Join Error: {err:#?}"),
         }
     }
+
+    bar.finish();
+    eprintln!("{:#?}, {}", bar.duration(), bar.per_sec());
 }
 
 pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
