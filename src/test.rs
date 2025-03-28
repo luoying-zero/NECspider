@@ -24,7 +24,7 @@ async fn main() {
     let mut join_set: JoinSet<String> = JoinSet::new();
     let bar = ProgressBar::new(end - begin);
     bar.set_style(
-        ProgressStyle::with_template("{bar:40} {pos:>7}/{len:7} | {elapsed}/{eta} | {per_sec}")
+        ProgressStyle::with_template("{bar:40} {pos:>7}/{len:7} | {elapsed_precise}/{eta_precise} | {per_sec}")
             .unwrap(),
     );
     bar.set_draw_target(ProgressDrawTarget::stderr_with_hz(1));
