@@ -83,7 +83,7 @@ async fn main() {
                 match check_bytes_sequence(
                     bytes.clone(),
                     Bytes::from("\"code\":"),
-                    Bytes::from("4"),
+                    Bytes::from("406"),
                 )
                 {
                     true => Err(anyhow!("Request is limited")),
