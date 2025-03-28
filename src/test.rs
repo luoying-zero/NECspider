@@ -68,9 +68,10 @@ async fn main() {
                     .send()
                     .await?
                     .error_for_status()?
-                    .text()
-                    .await?;
-                Ok::<String, reqwest::Error>(bytes)
+                    .chunk()
+                    .await?
+                    .unwrap();
+                Ok::<bytes::Bytes, reqwest::Error>(bytes)
             };
             match req
                 .retry(
@@ -82,7 +83,7 @@ async fn main() {
                 )
                 .await
             {
-                Ok(text) => text,
+                Ok(bytes) => bytes.escape_ascii().to_string(),
                 Err(e) => format!("Err pid {id} {e:#?}"),
             }
         });
