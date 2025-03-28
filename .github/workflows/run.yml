@@ -6,7 +6,7 @@ on:
       parallelism:
         required: false
         type: string
-        default: "20000"
+        default: "50"
       begin_id:
         required: false
         type: string

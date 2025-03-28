@@ -1,4 +1,5 @@
-use backon::ExponentialBuilder;
+use anyhow::{anyhow, Error};
+use backon;
 use backon::Retryable;
 use bytes::Bytes;
 use indicatif::ProgressBar;
@@ -15,8 +16,8 @@ use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
-    let filed = Bytes::from_static(b"\"userId\":");
-    let author = Bytes::from_static(b"62696289,");
+    let filed = Bytes::from("\"userId\":");
+    let author = Bytes::from("62696289,");
     let mut arguments = args();
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
@@ -76,16 +77,24 @@ async fn main() {
                     .send()
                     .await?
                     .error_for_status()?
-                    .bytes()
-                    .await?;
-                Ok::<bytes::Bytes, reqwest::Error>(bytes)
+                    .chunk()
+                    .await?
+                    .unwrap();
+                match check_bytes_sequence(
+                    bytes.clone(),
+                    Bytes::from("\"code\":"),
+                    Bytes::from("4"),
+                )
+                {
+                    true => Err(anyhow!("Request is limited")),
+                    false => Ok::<bytes::Bytes, Error>(bytes),
+                }
             };
             let res = match req
                 .retry(
-                    ExponentialBuilder::default()
+                    backon::ExponentialBuilder::default()
                         .with_jitter()
-                        .with_factor(3.0)
-                        .with_min_delay(Duration::from_secs(10))
+                        .with_factor(2.0)
                         .with_max_times(5),
                 )
                 .await
@@ -101,8 +110,6 @@ async fn main() {
         });
     }
 
-    eprintln!("{:#?}, {}", bar.duration(), bar.per_sec());
-
     while let Some(res) = join_set.join_next().await {
         match res {
             Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
@@ -111,6 +118,8 @@ async fn main() {
             Err(err) => eprintln!("Join Error: {err:#?}"),
         }
     }
+
+    eprintln!("{:#?}, {}", bar.elapsed(), bar.per_sec());
 }
 
 pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {

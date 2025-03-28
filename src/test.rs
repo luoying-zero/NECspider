@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Error};
-use backon::ExponentialBuilder;
+use backon;
 use backon::Retryable;
 use bytes::Bytes;
 use indicatif::ProgressBar;
@@ -84,10 +84,9 @@ async fn main() {
             };
             match req
                 .retry(
-                    ExponentialBuilder::default()
+                    backon::ExponentialBuilder::default()
                         .with_jitter()
-                        .with_factor(3.0)
-                        .with_min_delay(Duration::from_secs(10))
+                        .with_factor(2.0)
                         .with_max_times(5),
                 )
                 .await
@@ -106,7 +105,7 @@ async fn main() {
     }
 
     bar.finish();
-    eprintln!("{:#?}, {}", bar.duration(), bar.per_sec());
+    eprintln!("{:#?}, {}", bar.elapsed(), bar.per_sec());
 }
 
 pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
