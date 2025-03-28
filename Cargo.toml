@@ -21,6 +21,7 @@ name = "static"
 path = "src/static.rs"
 
 [dependencies]
+anyhow = "1.0.97"
 backon = { version = "1.4.1", features = ["tokio-sleep"] }
 bytes = "1"
 indicatif = "0.17.11"

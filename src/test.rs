@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Error};
 use backon::ExponentialBuilder;
 use backon::Retryable;
 use bytes::Bytes;
@@ -14,8 +15,8 @@ use tokio::task::JoinSet;
 
 #[tokio::main]
 async fn main() {
-    let filed = Bytes::from_static(b"\"userId\":");
-    let author = Bytes::from_static(b"62696289,");
+    let filed = Bytes::from("\"userId\":");
+    let author = Bytes::from("62696289,");
     let mut arguments = args();
     let max_concurrent = arguments.nth(1).unwrap().parse::<usize>().unwrap();
     let begin = arguments.next().unwrap().parse::<u64>().unwrap();
@@ -71,7 +72,15 @@ async fn main() {
                     .chunk()
                     .await?
                     .unwrap();
-                Ok::<bytes::Bytes, reqwest::Error>(bytes)
+                match check_bytes_sequence(
+                    bytes,,clone(),
+                    Bytes::from("\"code\":"),
+                    Bytes::from("4"),
+                )
+                {
+                    true => Err(anyhow!("Request is limited")),
+                    false => Ok::<bytes::Bytes, Error>(bytes),
+                }
             };
             match req
                 .retry(
