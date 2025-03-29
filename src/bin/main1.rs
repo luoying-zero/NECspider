@@ -50,11 +50,10 @@ async fn main() {
         let filed = filed.clone();
         let author = author.clone();
         let client_clone = client.clone();
-        let semaphore = semaphore.clone();
-        let permit = loop {
-            tokio::select! {
-                Ok(permit) = semaphore.acquire_owned() => break permit,
-                Some(res) = join_set.join_next() => {
+        let permit = tokio::select! {
+            Ok(permit) = semaphore.clone().acquire_owned() => permit,
+            _ = async {
+                while let Some(res) = join_set.join_next().await {
                     match res {
                         Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
                         Ok(Ok(None)) => (),
@@ -62,8 +61,8 @@ async fn main() {
                         Err(err) => eprintln!("Join Error: {err:#?}"),
                     }
                 }
-            }
-        };
+            } => semaphore.clone().acquire_owned().await.unwrap(),
+        }
         // if (id - begin) % ((end - begin) / 100) == 0 {
         // bar.inc((end - begin) / 100);
         // }
