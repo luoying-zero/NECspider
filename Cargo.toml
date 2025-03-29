@@ -2,23 +2,23 @@
 name = "NECspider"
 version = "0.1.0"
 edition = "2024"
-default-run = "NECspider"
+# default-run = "NECspider"
 
-[[bin]]
-name = "NECspider"
-path = "src/main.rs"
+# [[bin]]
+# name = "NECspider"
+# path = "src/main.rs"
 
-[[bin]]
-name = "test"
-path = "src/test.rs"
+# [[bin]]
+# name = "test"
+# path = "src/test.rs"
 
-[[bin]]
-name = "test1"
-path = "src/test1.rs"
+# [[bin]]
+# name = "test1"
+# path = "src/test1.rs"
 
-[[bin]]
-name = "static"
-path = "src/static.rs"
+# [[bin]]
+# name = "static"
+# path = "src/static.rs"
 
 [dependencies]
 anyhow = "1.0.97"
