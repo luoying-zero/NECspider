@@ -54,7 +54,7 @@ async fn main() {
         let permit = loop {
             tokio::select! {
                 permit = semaphore.acquire_owned().await.unwrap() => break permit,
-                Some(res) = join_set.join_next().await {
+                Some(res) = join_set.join_next().await => {
                     match res {
                         Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
                         Ok(Ok(None)) => (),
@@ -63,7 +63,7 @@ async fn main() {
                     }
                 }
             }
-        }
+        };
         // if (id - begin) % ((end - begin) / 100) == 0 {
         // bar.inc((end - begin) / 100);
         // }
