@@ -53,8 +53,8 @@ async fn main() {
         let semaphore = semaphore.clone();
         let permit = loop {
             tokio::select! {
-                permit = semaphore.acquire_owned().await.unwrap() => break permit,
-                Some(res) = join_set.join_next().await => {
+                Some(permit) = semaphore.acquire_owned() => break permit,
+                Some(res) = join_set.join_next() => {
                     match res {
                         Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
                         Ok(Ok(None)) => (),
