@@ -21,6 +21,7 @@ jobs:
         run: |
           set +e
           cargo install cargo-ndk
+          cargo add openssl --features vendored
           rustup target add aarch64-linux-android
           cargo ndk -t arm64-v8a build --release --bin NECspider --bin test
       - name: Upload artifact
