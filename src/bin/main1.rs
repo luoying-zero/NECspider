@@ -62,7 +62,7 @@ async fn main() {
                     }
                 }
             } => semaphore.clone().acquire_owned().await.unwrap(),
-        }
+        };
         // if (id - begin) % ((end - begin) / 100) == 0 {
         // bar.inc((end - begin) / 100);
         // }
