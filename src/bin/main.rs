@@ -52,7 +52,8 @@ async fn main() {
         let filed = filed.clone();
         let author = author.clone();
         let client_clone = client.clone();
-        let handle = tokio::spawn(async {
+        let join_set = &mut join_set;
+        let handle = tokio::spawn(async move {
             while let Some(res) = join_set.join_next().await {
                 match res {
                     Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
@@ -65,6 +66,7 @@ async fn main() {
         let permit = semaphore.clone().acquire_owned().await.unwrap();
         handle.abort();
         handle.await;
+        drop(join_set);
         // if (id - begin) % ((end - begin) / 100) == 0 {
         // bar.inc((end - begin) / 100);
         // }
