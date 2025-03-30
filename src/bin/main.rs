@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Error};
+use anyhow::{Error, anyhow};
 use backon;
 use backon::Retryable;
 use bytes::Bytes;
@@ -26,8 +26,10 @@ async fn main() {
     let semaphore = Arc::new(tokio::sync::Semaphore::new(max_concurrent));
     let bar = ProgressBar::new(end - begin);
     bar.set_style(
-        ProgressStyle::with_template("{bar:40} {pos:>7}/{len:7} | {elapsed_precise}/{eta_precise} | {per_sec}")
-            .unwrap(),
+        ProgressStyle::with_template(
+            "{bar:40} {pos:>7}/{len:7} | {elapsed_precise}/{eta_precise} | {per_sec}",
+        )
+        .unwrap(),
     );
     bar.set_draw_target(ProgressDrawTarget::stderr_with_hz(1));
 
@@ -50,11 +52,8 @@ async fn main() {
         let filed = filed.clone();
         let author = author.clone();
         let client_clone = client.clone();
-        let permit = loop {
-            if semaphore.available_permits() > 0 {
-                break semaphore.clone().acquire_owned().await.unwrap();
-            }
-            if let Some(res) = join_set.try_join_next() {
+        let joinhandle = tokio::spawn(async {
+            while let Some(res) = join_set.join_next().await {
                 match res {
                     Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
                     Ok(Ok(None)) => (),
@@ -62,7 +61,9 @@ async fn main() {
                     Err(err) => eprintln!("Join Error: {err:#?}"),
                 }
             }
-        };
+        });
+        let permit = semaphore.clone().acquire_owned().await.unwrap();
+        joinhandle.abort();
         // if (id - begin) % ((end - begin) / 100) == 0 {
         // bar.inc((end - begin) / 100);
         // }
@@ -84,8 +85,7 @@ async fn main() {
                     bytes.clone(),
                     Bytes::from("\"code\":"),
                     Bytes::from("406"),
-                )
-                {
+                ) {
                     true => Err(anyhow!("Request is limited")),
                     false => Ok::<bytes::Bytes, Error>(bytes),
                 }
@@ -122,7 +122,7 @@ async fn main() {
     eprintln!("{:#?}, {}", bar.elapsed(), bar.per_sec());
 }
 
-pub fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
+fn check_bytes_sequence(haystack: Bytes, needle1: Bytes, needle2: Bytes) -> bool {
     if let Some(pos) = find_subsequence(&haystack, &needle1) {
         let remaining = &haystack[pos + needle1.len()..];
         remaining.starts_with(&needle2)
@@ -136,3 +136,18 @@ fn find_subsequence(haystack: &Bytes, needle: &Bytes) -> Option<usize> {
         .windows(needle.len())
         .position(|window| window == needle)
 }
+
+// let permit = tokio::select! {
+// Ok(permit) = semaphore.clone().acquire_owned() => permit,
+// _ = async {
+// while let Some(res) = join_set.join_next().await {
+// match res {
+// Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
+// Ok(Ok(None)) => (),
+// Ok(Err(e)) => eprintln!("{e}"),
+// Err(err) => eprintln!("Join Error: {err:#?}"),
+// }
+// }
+// false
+// } => semaphore.clone().acquire_owned().await.unwrap(),
+// };
