@@ -52,7 +52,7 @@ async fn main() {
         let filed = filed.clone();
         let author = author.clone();
         let client_clone = client.clone();
-        let joinhandle = tokio::spawn(async {
+        let joinhandle = tokio::task::spawn_local(async {
             while let Some(res) = join_set.join_next().await {
                 match res {
                     Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
