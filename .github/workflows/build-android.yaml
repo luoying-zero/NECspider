@@ -29,5 +29,5 @@ jobs:
         with:
           name: android_arm64
           path: |
-            target/aarch64-linux-android/release/NECspider
+            target/aarch64-linux-android/release/main2
             target/aarch64-linux-android/release/test
