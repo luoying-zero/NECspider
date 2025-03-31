@@ -53,6 +53,7 @@ async fn main() {
         let author = author.clone();
         let client_clone = client.clone();
         let permit = tokio::select! {
+            biased;
             Ok(permit) = semaphore.clone().acquire_owned() => permit,
             _ = async {
                 while let Some(res) = join_set.join_next().await {

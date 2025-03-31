@@ -52,8 +52,7 @@ async fn main() {
         let filed = filed.clone();
         let author = author.clone();
         let client_clone = client.clone();
-        let join_set = &mut join_set;
-        let handle = tokio::spawn(async move {
+        let handle = tokio::spawn(async {
             while let Some(res) = join_set.join_next().await {
                 match res {
                     Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
@@ -66,7 +65,6 @@ async fn main() {
         let permit = semaphore.clone().acquire_owned().await.unwrap();
         handle.abort();
         handle.await;
-        drop(join_set);
         // if (id - begin) % ((end - begin) / 100) == 0 {
         // bar.inc((end - begin) / 100);
         // }
@@ -139,18 +137,3 @@ fn find_subsequence(haystack: &Bytes, needle: &Bytes) -> Option<usize> {
         .windows(needle.len())
         .position(|window| window == needle)
 }
-
-// let permit = tokio::select! {
-// Ok(permit) = semaphore.clone().acquire_owned() => permit,
-// _ = async {
-// while let Some(res) = join_set.join_next().await {
-// match res {
-// Ok(Ok(Some(id))) => println!("\"https://music.lliiiill.com/playlist/{id}\","),
-// Ok(Ok(None)) => (),
-// Ok(Err(e)) => eprintln!("{e}"),
-// Err(err) => eprintln!("Join Error: {err:#?}"),
-// }
-// }
-// false
-// } => semaphore.clone().acquire_owned().await.unwrap(),
-// };

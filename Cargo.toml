@@ -2,7 +2,7 @@
 name = "NECspider"
 version = "0.1.0"
 edition = "2024"
-default-run = "main"
+default-run = "main2"
 
 # [[bin]]
 # name = "NECspider"
